@@ -33,9 +33,6 @@ BUTTONCOLOR = WHITE
 BUTTONTEXTCOLOR = BLACK
 MESSAGECOLOR = WHITE
 
-## Image Load
-CAR_IMG = pygame.image.load('./image/car-small.png')
-
 
 
 ## Game Parameter
@@ -64,8 +61,13 @@ def main():
 
     SOLVE_SURF, SOLVE_RECT = makeText('Solve', TEXTCOLOR, TILECOLOR, WINDOWWIDTH - 120, WINDOWHEIGHT - 30)
 
+    ## Image Load
+    CAR_IMG = pygame.image.load('./image/car-small.png')
+    MAP_IMG = pygame.image.load('./image/seoul_city_map.png').convert()
+    MAP_IMG.set_alpha(50)
 
-#    pygame.draw.rect(DISPLAYSURF, RED, (200, 150, 100, 50))
+
+    #    pygame.draw.rect(DISPLAYSURF, RED, (200, 150, 100, 50))
 #    pixObj = pygame.PixelArray(DISPLAYSURF)
 #    pixObj[480][380] = BLACK
 #    del pixObj
@@ -88,6 +90,7 @@ def main():
     while True:  # main game loop
 
         DISPLAYSURF.fill(WHITE)
+        DISPLAYSURF.blit(MAP_IMG, (0, 0))
 
         displayGrid(DISPLAYSURF, grid=5)
 
