@@ -14,12 +14,14 @@ WHITE = (255,255,255)
 BLACK = (0,0,0)
 RED = (255,0,0)
 GREEN = (0, 255, 0)
+BLUE = (0, 0, 255)
 GREY = (200,200,200)
 BRIGHTBLUE =    (  0,  50, 255)
 DARKTURQUOISE = (  3,  54,  73)
 WINDOWWIDTH = 800   # 게임화면의 가로크기
 WINDOWHEIGHT = 800  # 게임화면의 세로크기
 RECTSIZE = 100
+RECT_LINE_WIDTH = 2
 
 BASICFONTSIZE = 20
 BGCOLOR = DARKTURQUOISE
@@ -33,6 +35,10 @@ MESSAGECOLOR = WHITE
 ## Image Load
 CAR_IMG = pygame.image.load('./image/car-small.png')
 
+
+
+## Game Parameter
+GRID_SIZE = 5
 
 def main():
     global FPSCLOCK, DISPLAYSURF, BASICFONT, RESET_SURF, RESET_RECT, NEW_SURF, NEW_RECT, SOLVE_SURF, SOLVE_RECT
@@ -53,6 +59,9 @@ def main():
 #    pixObj = pygame.PixelArray(DISPLAYSURF)
 #    pixObj[480][380] = BLACK
 #    del pixObj
+
+
+    ## Random Call Array
 
     init_x = WINDOWWIDTH/2
     init_y = WINDOWHEIGHT/2
@@ -92,7 +101,18 @@ def displayGrid(surf, grid = 5):
 
     for i in range(grid):
         for j in range(grid):
-            pygame.draw.rect(surf, GREY, (start_x+i*RECTSIZE, start_y+j*RECTSIZE, RECTSIZE, RECTSIZE), 2)
+            rect_x = start_x+i*(RECTSIZE-RECT_LINE_WIDTH/2)
+            rect_y = start_y+j*(RECTSIZE-RECT_LINE_WIDTH/2)
+            pygame.draw.rect(surf, GREY, (rect_x , rect_y , RECTSIZE, RECTSIZE), RECT_LINE_WIDTH)
+            displayText(surf, str(( i+1)+5*j ), rect_x+50, rect_y+50 )
+
+
+def displayText(surf, text, center_x, center_y):
+    fontObj = pygame.font.Font('freesansbold.ttf', 40)
+    textSurfaceObj = fontObj.render(text, True, GREY, WHITE)
+    textRectObj = textSurfaceObj.get_rect()
+    textRectObj.center = (center_x, center_y)
+    surf.blit(textSurfaceObj, textRectObj)
 
 def makeText(text, color, bgcolor, top, left):
     # create the Surface and Rect objects for some text.
@@ -100,6 +120,9 @@ def makeText(text, color, bgcolor, top, left):
     textRect = textSurf.get_rect()
     textRect.topleft = (top, left)
     return (textSurf, textRect)
+
+
+
 
 if __name__ == '__main__':
     main()
