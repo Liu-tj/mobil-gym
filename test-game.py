@@ -33,6 +33,7 @@ BUTTONCOLOR = WHITE
 BUTTONTEXTCOLOR = BLACK
 MESSAGECOLOR = WHITE
 
+TEXT_FONT = 'freesansbold.ttf'
 
 
 ## Game Parameter
@@ -65,7 +66,7 @@ def main():
     FPSCLOCK = pygame.time.Clock()
     DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
     pygame.display.set_caption('Mobil Gym')
-    BASICFONT = pygame.font.Font('freesansbold.ttf', BASICFONTSIZE)
+    BASICFONT = pygame.font.Font(TEXT_FONT, BASICFONTSIZE)
 
  #   RESET_SURF, RESET_RECT = makeText('Reset', TEXTCOLOR, TILECOLOR, WINDOWWIDTH - 120, WINDOWHEIGHT - 90)
  #   NEW_SURF, NEW_RECT = makeText('New Game', TEXTCOLOR, TILECOLOR, WINDOWWIDTH - 120, WINDOWHEIGHT - 60)
@@ -77,31 +78,30 @@ def main():
     CAR_A_IMG = pygame.image.load('./image/car-small_a.png')
     CAR_B_IMG = pygame.image.load('./image/car-small_b.png')
     CAR_C_IMG = pygame.image.load('./image/car-small_c.png')
+
+    CAR_A_ON_IMG = pygame.image.load('./image/car-small_a_on.png')
+    CAR_B_ON_IMG = pygame.image.load('./image/car-small_b_on.png')
+    CAR_C_ON_IMG = pygame.image.load('./image/car-small_c_on.png')
+
     MAP_IMG = pygame.image.load('./image/seoul_city_map.png').convert()
     MAP_IMG.set_alpha(50)
-
 
     ## Initiate Game Variable
     c_status = initStatus(3)
 
-    #    pygame.draw.rect(DISPLAYSURF, RED, (200, 150, 100, 50))
-#    pixObj = pygame.PixelArray(DISPLAYSURF)
-#    pixObj[480][380] = BLACK
-#    del pixObj
+    c_status[0]['off_img'] = CAR_A_IMG
+    c_status[0]['on_img'] = CAR_A_ON_IMG
 
+    c_status[1]['off_img'] = CAR_B_IMG
+    c_status[1]['on_img'] = CAR_B_ON_IMG
 
-    ## Random Call Array
-
-    init_x = WINDOWWIDTH/2
-    init_y = WINDOWHEIGHT/2
-#    car_x=init_x
-#    car_y=init_y
-
-    tmp = 0
+    c_status[2]['off_img'] = CAR_C_IMG
+    c_status[2]['on_img'] = CAR_C_ON_IMG
 
     total_frame = 0
     frame = 0
 
+    ## Random Call Array
     origin_call_list = makeOriginProb(500)
 
     while True:  # main game loop
@@ -109,9 +109,10 @@ def main():
         DISPLAYSURF.fill(WHITE)
         DISPLAYSURF.blit(MAP_IMG, (0, 0))
         displayScore(DISPLAYSURF, c_status)
+        displayTime(DISPLAYSURF, total_frame)
         displayGrid(DISPLAYSURF, grid=5)
 
-        if total_frame > 499:
+        if total_frame > 99999:
             total_frame = 0
         else:
             total_frame = total_frame + 1
@@ -120,26 +121,15 @@ def main():
             if frame > 499 :
                 frame = 0
             else:
+                c_status = updateCarStatus(c_status, origin_call_list[frame])
                 frame = frame + 1
-                c_status = updateStatus(c_status, origin_call_list[frame])
+
+        if total_frame % 30 == 0 :
+            c_status = updateCarPos(c_status)
 
         displayCallRect(DISPLAYSURF, origin_call_list[frame])
+        displayCarImg(DISPLAYSURF, c_status)
 
-
-
-        #displayArrow(DISPLAYSURF, 200, 200)
-
-        if tmp > 99:
-            tmp =0
-        else :
-            tmp = tmp +1
-
-        car_x = init_x-30# + tmp
-        car_y = init_y-30# + tmp
-
-        DISPLAYSURF.blit(CAR_A_IMG, (car_x, car_y))
-        DISPLAYSURF.blit(CAR_B_IMG, (car_x-200, car_y-200))
-        DISPLAYSURF.blit(CAR_C_IMG, (car_x+200, car_y+200))
 
         for event in pygame.event.get():
             if event.type == QUIT:
@@ -149,12 +139,19 @@ def main():
         pygame.display.update()
         FPSCLOCK.tick(FPS)
 
+def displayTime(surf, fps):
+    fontObj = pygame.font.Font(TEXT_FONT, 16)
+    font_time = pygame.font.Font(TEXT_FONT, 14)
+    ## Fixed Text
+
+    tmp_time = str(int(fps*0.5))+'min'
+    surf.blit(fontObj.render('Time : ', False, BLACK), (600, 10))
+    surf.blit(font_time.render(tmp_time, False, BLUE), (660, 10))
+
 def displayScore(surf, c_status):
 
-    taxi_name = ['A', 'B', 'C', 'D', 'E','F']
-
-    fontObj = pygame.font.Font('freesansbold.ttf', 16)
-    font_stats = pygame.font.Font('freesansbold.ttf', 14)
+    fontObj = pygame.font.Font(TEXT_FONT, 16)
+    font_stats = pygame.font.Font(TEXT_FONT, 14)
     ## Fixed Text
     text_trip = fontObj.render('Trip', False, BLACK)
     text_dist = fontObj.render('Dist', False, BLACK)
@@ -188,7 +185,15 @@ def initStatus(num_car):
     for i in range(num_car):
         tmp_dic = {}
         tmp_dic['name'] = taxi_name[i]
+        tmp_dic['off_img'] = None
+        tmp_dic['on_img'] = None
         tmp_dic['crt_pos'] = i*12
+        tmp_dic['call_ori'] = 0
+        tmp_dic['call_des'] = 0
+        tmp_dic['remain_col'] = 0
+        tmp_dic['remain_row'] = 0
+        tmp_dic['remain_step'] = 0
+        tmp_dic['pas_on'] = False
         tmp_dic['trip'] = 0
         tmp_dic['dist'] = 0.0
         tmp_dic['income'] = 0
@@ -201,28 +206,59 @@ def initStatus(num_car):
 
     return rtn_status
 
-def updateStatus(c_status, tmp_list):
-
+def updateCarStatus(c_status, tmp_list):
+    ## Update the call status for taxi
     for i in range(len(c_status)):
 
-        tmp_car_pos = c_status[i]['crt_pos']
-        ori_pos = tmp_car_pos
-        des_pos = tmp_list[ori_pos]
-        call_dist = int(np.abs(des_pos-ori_pos) / GRID_SIZE + np.abs(des_pos-ori_pos) % GRID_SIZE)
+        if c_status[i]['pas_on'] == False:
+            tmp_car_pos = c_status[i]['crt_pos']
+            ori_pos = tmp_car_pos
+            des_pos = tmp_list[ori_pos]
+            call_dist = int(np.abs(des_pos-ori_pos) / GRID_SIZE + np.abs(des_pos-ori_pos) % GRID_SIZE)
 
-        call_money = int(30+(call_dist-1)*14)
+            ## car-pos & call origin match check
+            if des_pos > 0:
+                c_status[i]['pas_on'] = True
+                c_status[i]['call_ori'] = ori_pos
+                c_status[i]['call_des'] = des_pos
+                c_status[i]['remain_col'] = int( np.abs(des_pos-ori_pos) % GRID_SIZE )
+                c_status[i]['remain_row'] = int( np.abs(des_pos-ori_pos) / GRID_SIZE )
+                c_status[i]['remain_step'] = c_status[i]['remain_col'] + c_status[i]['remain_row']
+                break
 
-        if des_pos > 0:
-            ## car-pos & call origin matched
-            c_status[i]['trip'] = c_status[i]['trip']+1
-            c_status[i]['dist'] = c_status[i]['dist'] + call_dist
-            c_status[i]['income'] = c_status[i]['income'] + call_money
+    return c_status
+
+
+def updateCarPos(c_status):
+
+    for i in range(len(c_status)):
+        #car_pos = c_status[i]['crt_pos']
+        if c_status[i]['pas_on'] == True :
+            ori_pos = c_status[i]['call_ori']
+            des_pos = c_status[i]['call_des']
+
+            call_dist = int(np.abs(des_pos - ori_pos) / GRID_SIZE + np.abs(des_pos - ori_pos) % GRID_SIZE)
+            call_money = int(30 + (call_dist - 1) * 14)
+
+            #if car_pos == des_pos :
+            if c_status[i]['remain_step'] == 0 :
+                c_status[i]['pas_on'] = False
+                c_status[i]['crt_pos'] = des_pos
+                c_status[i]['call_ori'] = 0
+                c_status[i]['call_des'] = 0
+                c_status[i]['trip'] = c_status[i]['trip'] + 1
+                c_status[i]['dist'] = c_status[i]['dist'] + call_dist
+                c_status[i]['income'] = c_status[i]['income'] + call_money
+            else :
+                c_status[i]['remain_step'] = c_status[i]['remain_step']-1
+
+
 
     return c_status
 
 
 def displayGrid(surf, grid = 5):
-#    surf.fill(WHITE)
+    ## Display Map Grid ( Grid x Grid )
     start_x = WINDOWWIDTH/2 - (grid/2)*RECTSIZE
     start_y = WINDOWHEIGHT/2 - (grid/2)*RECTSIZE
 
@@ -231,11 +267,12 @@ def displayGrid(surf, grid = 5):
             rect_x = start_x+i*(RECTSIZE-RECT_LINE_WIDTH/2)
             rect_y = start_y+j*(RECTSIZE-RECT_LINE_WIDTH/2)
             pygame.draw.rect(surf, GREY, (rect_x , rect_y , RECTSIZE, RECTSIZE), RECT_LINE_WIDTH)
-            displayText(surf, str(( i+1)+5*j ), rect_x+50, rect_y+50 )
+            displayGridNum(surf, str(( i+1)+5*j ), rect_x+50, rect_y+50 )
 
 
-def displayText(surf, text, center_x, center_y, t_color=GREY):
-    fontObj = pygame.font.Font('freesansbold.ttf', 40)
+def displayGridNum(surf, text, center_x, center_y, t_color=GREY):
+    ## Display map grid number
+    fontObj = pygame.font.Font(TEXT_FONT, 40)
     textSurfaceObj = fontObj.render(text, True, t_color, WHITE)
     textRectObj = textSurfaceObj.get_rect()
     textRectObj.center = (center_x, center_y)
@@ -246,6 +283,27 @@ def displayArrow(surf, end_x, end_y):
     pygame.draw.line(surf, RED, (end_x-12, end_y), (end_x, end_y), 3)
     pygame.draw.line(surf, RED, (end_x-4, end_y-4), (end_x, end_y), 3)
     pygame.draw.line(surf, RED, (end_x-4, end_y+4), (end_x, end_y), 3)
+
+def displayCarImg(surf, c_status):
+
+    start_x = WINDOWWIDTH / 2 - (GRID_SIZE / 2) * RECTSIZE
+    start_y = WINDOWHEIGHT / 2 - (GRID_SIZE / 2) * RECTSIZE
+
+    for i in range(len(c_status)):
+
+        car_pos = c_status[i]['crt_pos']
+
+        car_col = int(car_pos % GRID_SIZE)
+        car_row = int(car_pos / GRID_SIZE)
+
+        car_x = start_x + car_col * (RECTSIZE - RECT_LINE_WIDTH / 2) + 36
+        car_y = start_y + car_row * (RECTSIZE - RECT_LINE_WIDTH / 2) + 25
+
+        if c_status[i]['pas_on'] == True :
+            surf.blit(c_status[i]['on_img'], (car_x, car_y))
+        else:
+            surf.blit(c_status[i]['off_img'], (car_x, car_y))
+
 
 
 def displayCallRect(surf, tmp_list, grid=5):
@@ -260,7 +318,7 @@ def displayCallRect(surf, tmp_list, grid=5):
             ## If destination is defined
             if tmp_list[i+5*j] > 0:
                 pygame.draw.rect(surf, RED, (rect_x , rect_y , RECTSIZE, RECTSIZE), RECT_LINE_WIDTH)
-                displayText(surf, str(tmp_list[i+5*j]), rect_x + 50, rect_y + 50, t_color=RED)
+                displayGridNum(surf, str(tmp_list[i+5*j]), rect_x + 50, rect_y + 50, t_color=RED)
                 displayArrow(surf, rect_x + 28, rect_y + 50)
 
 
