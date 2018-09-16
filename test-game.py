@@ -51,6 +51,8 @@ def main():
     global FPSCLOCK, DISPLAYSURF, BASICFONT, RESET_SURF, RESET_RECT, NEW_SURF, NEW_RECT, SOLVE_SURF, SOLVE_RECT
 
     pygame.init()
+    pygame.font.init()
+
     FPSCLOCK = pygame.time.Clock()
     DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
     pygame.display.set_caption('Mobil Gym')
@@ -63,9 +65,15 @@ def main():
 
     ## Image Load
     CAR_IMG = pygame.image.load('./image/car-small.png')
+    CAR_A_IMG = pygame.image.load('./image/car-small_a.png')
+    CAR_B_IMG = pygame.image.load('./image/car-small_b.png')
+    CAR_C_IMG = pygame.image.load('./image/car-small_c.png')
     MAP_IMG = pygame.image.load('./image/seoul_city_map.png').convert()
     MAP_IMG.set_alpha(50)
 
+
+    ## Initiate Game Variable
+    c_status = initStatus(3)
 
     #    pygame.draw.rect(DISPLAYSURF, RED, (200, 150, 100, 50))
 #    pixObj = pygame.PixelArray(DISPLAYSURF)
@@ -91,7 +99,7 @@ def main():
 
         DISPLAYSURF.fill(WHITE)
         DISPLAYSURF.blit(MAP_IMG, (0, 0))
-
+        displayScore(DISPLAYSURF, c_status)
         displayGrid(DISPLAYSURF, grid=5)
 
         if total_frame > 499:
@@ -117,7 +125,9 @@ def main():
         car_x = init_x-30# + tmp
         car_y = init_y-30# + tmp
 
-        DISPLAYSURF.blit(CAR_IMG, (car_x, car_y))
+        DISPLAYSURF.blit(CAR_A_IMG, (car_x, car_y))
+        DISPLAYSURF.blit(CAR_B_IMG, (car_x-200, car_y-200))
+        DISPLAYSURF.blit(CAR_C_IMG, (car_x+200, car_y+200))
 
         for event in pygame.event.get():
             if event.type == QUIT:
@@ -126,6 +136,58 @@ def main():
 
         pygame.display.update()
         FPSCLOCK.tick(FPS)
+
+def displayScore(surf, c_status):
+
+    taxi_name = ['A', 'B', 'C', 'D', 'E','F']
+
+    fontObj = pygame.font.Font('freesansbold.ttf', 16)
+    font_stats = pygame.font.Font('freesansbold.ttf', 14)
+    ## Fixed Text
+    text_trip = fontObj.render('Trip', False, BLACK)
+    text_dist = fontObj.render('Dist', False, BLACK)
+    text_inco = fontObj.render('Income', False, BLACK)
+
+    surf.blit(fontObj.render('Taxi', False, BLACK), (10, 10))
+    surf.blit(text_trip, (80, 10))
+    surf.blit(text_dist, (130, 10))
+    surf.blit(text_inco, (180, 10))
+
+    num_car = len(c_status)
+
+    for i in range(num_car):
+        tmp_name = c_status[i]['name']
+        tmp_trip = str(c_status[i]['trip'])
+        tmp_dist = str(c_status[i]['dist'])
+        tmp_income = str(c_status[i]['income'])
+
+        surf.blit(font_stats.render(tmp_name, False, BLACK), (10, 25+i*20))
+        surf.blit(font_stats.render(tmp_trip, False, GREEN), (80, 25+i*20))
+        surf.blit(font_stats.render(tmp_dist, False, GREEN), (130, 25+i*20))
+        surf.blit(font_stats.render(tmp_income, False, GREEN), (180, 25+i*20))
+
+
+def initStatus(num_car):
+
+    taxi_name = ['A', 'B', 'C', 'D', 'E', 'F']
+
+    rtn_status = []
+
+    for i in range(num_car):
+        tmp_dic = {}
+        tmp_dic['name'] = taxi_name[i]
+        tmp_dic['trip'] = 0
+        tmp_dic['dist'] = 0.0
+        tmp_dic['income'] = 0
+
+        rtn_status.append(tmp_dic)
+
+    return rtn_status
+
+def updateStatus(c_status, fps, num_car):
+
+
+    return rtn_status
 
 def displayGrid(surf, grid = 5):
 #    surf.fill(WHITE)
