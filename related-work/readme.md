@@ -9,4 +9,10 @@
 - (2) Augmenting decisions of taxi drivers through reinforcement learning for improving revenues (2017) [[pdf]](https://ink.library.smu.edu.sg/cgi/viewcontent.cgi?article=4869&context=sis_research)
 
 
-- (3) Agent-Based Modeling of Taxi Behavior Simulation with Probe Vehicle Data (2018) [[pdf]](www.mdpi.com/2220-9964/7/5/177/pdf)
+- (3) Agent-Based Modeling of Taxi Behavior Simulation with Probe Vehicle Data (2018) [[pdf]](http://www.mdpi.com/2220-9964/7/5/177/pdf)
+
+- (4) Game Theoretic Considerations for Optimizing Efficiency of Taxi Systems (2015, AAAI workshop) [[pdf]](https://aaai.org/ocs/index.php/WS/AAAIW15/paper/viewFile/10070/10171)
+
+- (5) Optimization of the Revenue of the New York City Taxi (2017) [[pdf]](https://www.thinkmind.org/download.php?articleid=data_analytics_2017_4_10_68005)
+
+- (6) Open AI Gym Taxi-v2 [[link]](https://gym.openai.com/envs/Taxi-v2/)
