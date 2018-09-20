@@ -49,8 +49,8 @@ top_border = 40.9176
 center_lat = (top_border + bottom_border) / 2  ## Vertical
 center_lon = (right_border + left_border) / 2  ## Horizon
 
-lat_div = (top_border - bottom_border) / WINDOWHEIGHT
-lon_div = (right_border - left_border) / WINDOWWIDTH
+lat_div =  WINDOWHEIGHT / (top_border - bottom_border)
+lon_div =  WINDOWWIDTH / (right_border - left_border)
 
 
 def main():
@@ -105,10 +105,10 @@ def main():
         #display_dot(DISPLAYSURF, center_lon, center_lat)
 
         display_dot(DISPLAYSURF, 0, 0 )
-        display_dot(DISPLAYSURF, 500, 500)
-        display_dot(DISPLAYSURF, 1000, 1000)
+        display_hexagon(DISPLAYSURF, center_lon, center_lat)
+        #display_dot(DISPLAYSURF, 1000, 1000)
         #displayScore(DISPLAYSURF, c_status)
-        #displayTime(DISPLAYSURF, total_frame)
+        displayTime(DISPLAYSURF, total_frame)
         #displayGrid(DISPLAYSURF, grid=5)
 
         if total_frame > 99999:
@@ -136,10 +136,38 @@ def main():
                 sys.exit()
 
         pygame.display.update()
+
+        sleep(2)
         FPSCLOCK.tick(FPS)
 
 
 import datetime as DT
+
+def displayTime(surf, fps):
+    fontObj = pygame.font.Font(TEXT_FONT, 16)
+    font_time = pygame.font.Font(TEXT_FONT, 14)
+    ## Fixed Text
+
+    tmp_time = str(int(fps))+'min'
+    surf.blit(fontObj.render('Time : ', False, BLACK), (850, 10))
+    surf.blit(font_time.render(tmp_time, False, BLUE), (890, 10))
+
+
+def display_call(surf, x, y):
+    return 0
+
+
+def return_adj_coord(tmp):
+    rtn_list = []
+
+    for item in tmp:
+        lat, lon = item
+        lat_adj = 1000 - (lat - bottom_border) * lat_div
+        lon_adj = (lon - left_border) * lon_div
+        rtn_list.append([lat_adj, lon_adj])
+
+    return rtn_list
+
 
 def display_dot(surf, x, y):
 
@@ -152,7 +180,10 @@ def display_hexagon(surf, x, y):
 
     h3coord = h3.geo_to_h3(y, x, 8)
     bound_list = h3.h3_to_geo_boundary(h3coord)
-    pygame.draw.polygon(surf, RED, bound_list, 3)
+
+    adj_bound_list = return_adj_coord(bound_list)
+
+    pygame.draw.polygon(surf, RED, adj_bound_list, 2)
 
 
 def apply_etamins(col):
