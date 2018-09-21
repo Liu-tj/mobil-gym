@@ -104,14 +104,21 @@ def main():
 
         #display_dot(DISPLAYSURF, center_lon, center_lat)
 
-        display_dot(DISPLAYSURF, 0, 0 )
-        display_hexagon(DISPLAYSURF, center_lon, center_lat)
+        #display_dot(DISPLAYSURF, 0, 0 )
+        #display_hexagon(DISPLAYSURF, center_lon, center_lat)
         #display_dot(DISPLAYSURF, 1000, 1000)
         #displayScore(DISPLAYSURF, c_status)
         displayTime(DISPLAYSURF, total_frame)
         #displayGrid(DISPLAYSURF, grid=5)
 
-        if total_frame > 99999:
+
+        ## check the call data
+        df_call = df_0510[(df_0510['s_mins'] ==total_frame)][
+            ['h_dist', 's_cen_lat', 's_cen_lon', 'e_cen_lat', 'e_cen_lon', 's_mins', 'e_mins']]
+
+        display_call(DISPLAYSURF, df_call)
+
+        if total_frame > 1439:
             total_frame = 0
         else:
             total_frame = total_frame + 1
@@ -122,6 +129,8 @@ def main():
             else:
          #       c_status = updateCarStatus(c_status, origin_call_list[frame])
                 frame = frame + 1
+
+
 
         #if total_frame % 30 == 0 :
         #    c_status = updateCarPos(c_status)
@@ -137,7 +146,7 @@ def main():
 
         pygame.display.update()
 
-        sleep(2)
+        sleep(1.5)
         FPSCLOCK.tick(FPS)
 
 
@@ -149,12 +158,45 @@ def displayTime(surf, fps):
     ## Fixed Text
 
     tmp_time = str(int(fps))+'min'
-    surf.blit(fontObj.render('Time : ', False, BLACK), (850, 10))
+    surf.blit(fontObj.render('Total mins : ', False, BLACK), (760, 10))
     surf.blit(font_time.render(tmp_time, False, BLUE), (890, 10))
 
+    hours = fps // 60
+    mins = fps % 60
+    tmp_hours = str(hours)+":"+str(mins)
+    surf.blit(fontObj.render('Time : ', False, BLACK), (760, 28))
+    surf.blit(font_time.render(tmp_hours, False, BLUE), (890, 28))
 
-def display_call(surf, x, y):
+
+def display_call(surf, df_call):
+
+    num_call = len(df_call)
+
+    call_loc_list = []
+
+    for i in range(num_call):
+        ## Append Start-Lat, Start-Lon
+        call_loc_list.append([df_call.iloc[i, 1], df_call.iloc[i, 2]])
+
+        display_hexagon(surf, df_call.iloc[i, 2], df_call.iloc[i, 1], l_color=RED)
+
     return 0
+
+def display_test_call(surf, df_call):
+
+    num_call = len(df_call)
+
+    call_loc_list = []
+
+    for i in range(num_call):
+        ## Append Start-Lat, Start-Lon
+        ## Lat - y, Lon - x
+        call_loc_list.append([df_call.iloc[i, 1], df_call.iloc[i, 2]])
+
+        display_dot(surf, df_call.iloc[i, 2], df_call.iloc[i, 1], l_color=RED)
+
+    return 0
+
 
 
 def return_adj_coord(tmp):
@@ -164,26 +206,28 @@ def return_adj_coord(tmp):
         lat, lon = item
         lat_adj = 1000 - (lat - bottom_border) * lat_div
         lon_adj = (lon - left_border) * lon_div
-        rtn_list.append([lat_adj, lon_adj])
+        rtn_list.append([lon_adj, lat_adj])
 
     return rtn_list
 
 
-def display_dot(surf, x, y):
+def display_dot(surf, x, y, l_color=RED):
 
-    adj_x = x
-    adj_y = y
-    pygame.draw.circle(surf, RED, [adj_x, adj_y], 3)
+    #adj_x = x
+    #adj_y = y
+
+    adj_coord = return_adj_coord([[y,x]])
+    pygame.draw.circle(surf, l_color, adj_coord, 3)
 
 
-def display_hexagon(surf, x, y):
+def display_hexagon(surf, x, y, l_color=RED):
 
     h3coord = h3.geo_to_h3(y, x, 8)
     bound_list = h3.h3_to_geo_boundary(h3coord)
 
     adj_bound_list = return_adj_coord(bound_list)
 
-    pygame.draw.polygon(surf, RED, adj_bound_list, 2)
+    pygame.draw.polygon(surf, l_color, adj_bound_list, 2)
 
 
 def apply_etamins(col):
