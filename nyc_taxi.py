@@ -52,6 +52,81 @@ center_lon = (right_border + left_border) / 2  ## Horizon
 lat_div =  WINDOWHEIGHT / (top_border - bottom_border)
 lon_div =  WINDOWWIDTH / (right_border - left_border)
 
+## Driver Property
+## 0 - get long dist call
+## 1 - get long eta - call
+## 2 - get short dist - call
+## 3 - get short eta - call
+
+DRIVER_PROP = 0
+
+
+class Taxi:
+    def __init__(self, img_on, img_off ):
+        self.img_on = img_on
+        self.img_off = img_off
+        self.call_status = False  ## True - Pass - on, False
+        self.crt_pos = None  ## h3 index
+        self.call_ori = None ## h3 index
+        self.call_des = None ## h3 index
+        self.call_stm = 0      ## Start Total mins
+        self.call_etm = 0      ## Estimated Arrival Total mins
+        self.call_remain_tm = 0 ##
+        self.crt_call_dist = 0
+        self.crt_call_eta = 0
+        self.taxi_attribute = None ## Taxi property
+        self.total_trip = 0
+        self.total_dist = 0
+        self.total_money = 0
+
+
+    def check_taxiloc(self):
+        if self.crt_pos == self.call_des :
+            ## If arrived destination
+            ## Update
+            return True
+        else:
+            return False
+
+    def update_taxistatus(self):
+        ## if check_taxiloc() == True
+        ## Update status
+
+        return 0
+
+
+    def check_taxigetcall(self, df_call, driver_prone):
+
+        df_crt_pos = df_call[(df_call['s_loc']==self.crt_pos)]
+
+        if len(df_crt_pos) > 0:
+            ## There is a call in crt_pos
+            if driver_prone == 0: ## get long dist call
+                idx = df_crt_pos.index[df_crt_pos['h_dist'] == df_crt_pos['h_dist'].max()].tolist()
+                df_tmp2 = df_crt_pos.iloc[idx, :][:1]
+
+            if driver_prone == 1: ## get long eta - call
+                idx = df_crt_pos.index[df_crt_pos['eta_mins'] == df_crt_pos['eta_mins'].max()].tolist()
+                df_tmp2 = df_crt_pos.iloc[idx, :][:1]
+
+            if driver_prone == 2: ## get short dist - call
+                idx = df_crt_pos.index[df_crt_pos['h_dist'] == df_crt_pos['h_dist'].min()].tolist()
+                df_tmp2 = df_crt_pos.iloc[idx, :][:1]
+
+            if driver_prone == 3: ## get short eta - call
+                idx = df_crt_pos.index[df_crt_pos['eta_mins'] == df_crt_pos['eta_mins'].min()].tolist()
+                df_tmp2 = df_crt_pos.iloc[idx, :][:1]
+
+
+
+
+        return 0
+
+
+    def add(self, num):
+        self.result += num
+        return self.result
+
 
 def main():
     global FPSCLOCK, DISPLAYSURF, BASICFONT, RESET_SURF, RESET_RECT, NEW_SURF, NEW_RECT, SOLVE_SURF, SOLVE_RECT
@@ -80,10 +155,10 @@ def main():
 
 
 
-
-
     ## Image Load
 
+    IMG_CAR_OFF = pygame.image.load('./image/car-small-nyc.png')
+    IMG_CAR_ON = pygame.image.load('./image/car-small-nyc.png')
     MAP_IMG = pygame.image.load('./image/nyc_map_1000.png').convert()
     MAP_IMG.set_alpha(50)
 
@@ -112,11 +187,13 @@ def main():
         #displayGrid(DISPLAYSURF, grid=5)
 
 
-        ## check the call data
+        ## check the call data ( Current Time Frame Call )
         df_call = df_0510[(df_0510['s_mins'] ==total_frame)][
-            ['h_dist', 's_cen_lat', 's_cen_lon', 'e_cen_lat', 'e_cen_lon', 's_mins', 'e_mins']]
+            ['h_dist', 's_cen_lat', 's_cen_lon', 'e_cen_lat', 'e_cen_lon', 's_mins', 'e_mins','eta_mins', 'fare_amount','s_loc','e_loc']].reset_index(drop=True)
 
         display_call(DISPLAYSURF, df_call)
+        display_taxi_img(DISPLAYSURF, IMG_CAR_OFF, 500, 500, car_on=False)
+
 
         if total_frame > 1439:
             total_frame = 0
@@ -166,6 +243,9 @@ def displayTime(surf, fps):
     tmp_hours = str(hours)+":"+str(mins)
     surf.blit(fontObj.render('Time : ', False, BLACK), (760, 28))
     surf.blit(font_time.render(tmp_hours, False, BLUE), (890, 28))
+
+def display_taxi_img(surf, img, x, y, car_on = False):
+    DISPLAYSURF.blit(img, (x, y))
 
 
 def display_call(surf, df_call):
