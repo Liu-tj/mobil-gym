@@ -60,6 +60,19 @@ lon_div =  WINDOWWIDTH / (right_border - left_border)
 
 DRIVER_PROP = 0
 
+RANDOM_START_LOCATION = ["882a1072cbfffff",
+                        "882a100d65fffff",
+                        "882a100d61fffff",
+                        "882a10721bfffff",
+                        "882a100d67fffff",
+                        "882a1072c9fffff",
+                        "882a100d21fffff",
+                        "882a1008b3fffff",
+                        "882a10725bfffff",
+                        "882a1072cdfffff",
+                        "882a107251fffff",
+                        "882a100d63fffff"]
+
 
 class Taxi:
     def __init__(self, img_on, img_off, crt_pos):
@@ -228,7 +241,11 @@ def main():
 
     ## Taxi class
     ## Initialized with On Img, Off Img, Initial Location (H3-coord)
-    taxi_a = Taxi(IMG_CAR_ON, IMG_CAR_OFF, '882a100d17fffff')
+
+
+
+    taxi_a = Taxi(IMG_CAR_ON, IMG_CAR_OFF,
+                  RANDOM_START_LOCATION[random.randint(0, len(RANDOM_START_LOCATION))])
     taxi_a.taxi_attribute = DRIVER_PROP
 
     total_frame = 0
@@ -242,15 +259,8 @@ def main():
         DISPLAYSURF.fill(WHITE)
         DISPLAYSURF.blit(MAP_IMG, (0, 0))
 
-        #display_dot(DISPLAYSURF, center_lon, center_lat)
-
-        #display_dot(DISPLAYSURF, 0, 0 )
-        #display_hexagon(DISPLAYSURF, center_lon, center_lat)
-        #display_dot(DISPLAYSURF, 1000, 1000)
-        #displayScore(DISPLAYSURF, c_status)
         displayTime(DISPLAYSURF, total_frame)
         #displayGrid(DISPLAYSURF, grid=5)
-
 
         ## check the call data ( Current Time Frame Call )
         df_call = df_0510[(df_0510['s_mins'] ==total_frame)][
@@ -312,7 +322,7 @@ def display_score(surf, taxi_cls):
     surf.blit(fontObj.render('Total incomes : ', False, BLACK), (20, 46))
 
     str_calls = str(taxi_cls.total_trip)
-    str_dists = str(taxi_cls.total_dist)
+    str_dists = str('%.2f'%taxi_cls.total_dist)
     str_incomes = str(taxi_cls.total_money)
 
     surf.blit(font_score.render(str_calls, False, BLUE), (150, 10))
@@ -327,11 +337,16 @@ def display_crt_taxi_status(surf, taxi_cls):
 
 
     surf.blit(fontObj.render('Call on : ', False, BLACK), (20, 70))
-    surf.blit(fontObj.render('Des Pos : ', False, BLACK), (20, 88))
+    surf.blit(fontObj.render('Des Pos(H3) : ', False, BLACK), (20, 88))
     surf.blit(fontObj.render('Remain Time : ', False, BLACK), (20, 106))
 
     if taxi_cls.call_status == True:
         str_calls = 'True'
+
+        bound_list = h3.h3_to_geo_boundary(taxi_cls.crt_call_des)
+        adj_bound_list = return_adj_coord(bound_list)
+        pygame.draw.polygon(surf, BRIGHTBLUE, adj_bound_list, 2)
+
     else :
         str_calls = 'False'
 
@@ -367,6 +382,9 @@ def display_taxi_img(surf, img, h3_coord, car_on = False):
     #rect = img.get_rect()
 
     rtn_adj_coord = return_adj_coord([[lat,lon]])
+
+    rtn_adj_coord[0][0] = rtn_adj_coord[0][0] - 4
+    rtn_adj_coord[0][1] = rtn_adj_coord[0][1] - 8
 
     surf.blit(img, rtn_adj_coord[0])
 
