@@ -67,13 +67,14 @@ class Taxi:
         self.img_off = img_off
         self.call_status = False  ## True - Pass - on, False
         self.crt_pos = crt_pos  ## h3 index
-        self.call_ori = None ## h3 index
-        self.call_des = None ## h3 index
-        self.call_stm = 0      ## Start Total mins
-        self.call_etm = 0      ## Estimated Arrival Total mins
-        self.call_remain_tm = 0 ##
+        self.crt_call_ori = None ## h3 index
+        self.crt_call_des = None ## h3 index
+        self.crt_call_stm = 0      ## Start Total mins
+        self.crt_call_etm = 0      ## Estimated Arrival Total mins
+        self.crt_call_remain_tm = 0 ##
         self.crt_call_dist = 0
         self.crt_call_eta = 0
+        self.crt_call_money = 0
         self.taxi_attribute = None ## Taxi property
         self.total_trip = 0
         self.total_dist = 0
@@ -88,9 +89,29 @@ class Taxi:
         else:
             return False
 
-    def update_taxistatus(self):
+    def update_taxistatus(self, frame):
         ## if check_taxiloc() == True
         ## Update status
+
+        if self.call_remain_tm > 0 :
+            self.call_remain_tm = self.call_remain_tm-1
+        else:
+            self.call_status = False
+            self.crt_pos = self.crt_call_des
+
+            self.total_trip = self.total_trip + 1
+            self.total_dist = self.total_dist + self.crt_call_dist
+            self.total_money = self.total_money + self.crt_call_money
+
+            self.crt_call_ori = None  ## h3 index
+            self.crt_call_des = None  ## h3 index
+            self.crt_call_stm = 0  ## Start Total mins
+            self.crt_call_etm = 0  ## Estimated Arrival Total mins
+            self.crt_call_remain_tm = 0  ##
+            self.crt_call_dist = 0
+            self.crt_call_eta = 0
+            self.crt_call_money = 0
+
 
         return 0
 
@@ -104,20 +125,24 @@ class Taxi:
         if len(df_crt_pos) > 0:
             ## There is a call in crt_pos
             if driver_prone == 0: ## get long dist call
-                idx = df_crt_pos.index[df_crt_pos['h_dist'] == df_crt_pos['h_dist'].max()].tolist()
-                df_tmp2 = df_crt_pos.iloc[idx, :][:1]
+                #idx = df_crt_pos.index[df_crt_pos['h_dist'] == df_crt_pos['h_dist'].max()].tolist()
+                df_tmp2 = df_crt_pos[(df_crt_pos['h_dist'] == df_crt_pos['h_dist'].max())]
+                #df_tmp2 = df_crt_pos[idx[0]]#[:1]
 
             if driver_prone == 1: ## get long eta - call
-                idx = df_crt_pos.index[df_crt_pos['eta_mins'] == df_crt_pos['eta_mins'].max()].tolist()
-                df_tmp2 = df_crt_pos.iloc[idx, :][:1]
+                #idx = df_crt_pos.index[df_crt_pos['eta_mins'] == df_crt_pos['eta_mins'].max()].tolist()
+                df_tmp2 = df_crt_pos[(df_crt_pos['eta_mins'] == df_crt_pos['eta_mins'].max())]
+                #df_tmp2 = df_crt_pos.iloc[idx, :]#[:1]
 
             if driver_prone == 2: ## get short dist - call
-                idx = df_crt_pos.index[df_crt_pos['h_dist'] == df_crt_pos['h_dist'].min()].tolist()
-                df_tmp2 = df_crt_pos.iloc[idx, :][:1]
+                #idx = df_crt_pos.index[df_crt_pos['h_dist'] == df_crt_pos['h_dist'].min()].tolist()
+                #df_tmp2 = df_crt_pos.iloc[idx, :]#[:1]
+                df_tmp2 = df_crt_pos[(df_crt_pos['h_dist'] == df_crt_pos['h_dist'].min())]
 
             if driver_prone == 3: ## get short eta - call
-                idx = df_crt_pos.index[df_crt_pos['eta_mins'] == df_crt_pos['eta_mins'].min()].tolist()
-                df_tmp2 = df_crt_pos.iloc[idx, :][:1]
+                #idx = df_crt_pos.index[df_crt_pos['eta_mins'] == df_crt_pos['eta_mins'].min()].tolist()
+                #df_tmp2 = df_crt_pos.iloc[idx, :]#[:1]
+                df_tmp2 = df_crt_pos[(df_crt_pos['eta_mins'] == df_crt_pos['eta_mins'].min())]
 
             if driver_prone == 4: ## Waiting
                 return False
@@ -136,13 +161,14 @@ class Taxi:
             ##10- e_loc
 
             self.call_status = True
-            self.call_ori = df_tmp2.iloc[0, 9 ]
-            self.call_des = df_tmp2.iloc[0, 10]
-            self.call_stm = df_tmp2.iloc[0, 5]
-            self.call_etm = df_tmp2.iloc[0, 6]
-            self.call_remain_tm = df_tmp2.iloc[0, 7]
+            self.crt_call_ori = df_tmp2.iloc[0, 9 ]
+            self.crt_call_des = df_tmp2.iloc[0, 10]
+            self.crt_call_stm = df_tmp2.iloc[0, 5]
+            self.crt_call_etm = df_tmp2.iloc[0, 6]
+            self.crt_call_remain_tm = df_tmp2.iloc[0, 7]
             self.crt_call_dist = df_tmp2.iloc[0, 0]
             self.crt_call_eta = df_tmp2.iloc[0, 7]
+            self.crt_call_money = df_tmp2.iloc[0, 8]
 
             ## Get Call
             return True
@@ -187,15 +213,23 @@ def main():
 
     ## Image Load
 
-    IMG_CAR_OFF = pygame.image.load('./image/car-small-nyc.png')
-    IMG_CAR_ON = pygame.image.load('./image/car-small-nyc.png')
+    IMG_CAR_OFF = pygame.image.load('./image/car-small-nyc-off.png')
+    IMG_CAR_ON = pygame.image.load('./image/car-small-nyc-on.png')
+
+    ## Car Img Rescaled
+    IMG_CAR_OFF = pygame.transform.scale(IMG_CAR_OFF, (8, 16))
+    IMG_CAR_ON = pygame.transform.scale(IMG_CAR_ON, (8, 16))
+
     MAP_IMG = pygame.image.load('./image/nyc_map_1000.png').convert()
     MAP_IMG.set_alpha(50)
 
     ## Initiate Game Variable
  #   c_status = initStatus(3)
 
+    ## Taxi class
+    ## Initialized with On Img, Off Img, Initial Location (H3-coord)
     taxi_a = Taxi(IMG_CAR_ON, IMG_CAR_OFF, '882a100d17fffff')
+    taxi_a.taxi_attribute = DRIVER_PROP
 
     total_frame = 0
     frame = 0
@@ -223,10 +257,12 @@ def main():
             ['h_dist', 's_cen_lat', 's_cen_lon', 'e_cen_lat', 'e_cen_lon', 's_mins', 'e_mins','eta_mins', 'fare_amount','s_loc','e_loc']].reset_index(drop=True)
 
         display_call(DISPLAYSURF, df_call)
-        
+
         if taxi_a.call_status == True :
+            taxi_a.update_taxistatus(total_frame)
             display_taxi_img(DISPLAYSURF, taxi_a.img_on, taxi_a.crt_pos)
         else:
+            taxi_a.check_taxigetcall(df_call)
             display_taxi_img(DISPLAYSURF, taxi_a.img_off, taxi_a.crt_pos)
 
 
@@ -264,6 +300,12 @@ def main():
 
 import datetime as DT
 
+
+def display_score(surf, taxi_cls):
+
+    return 0
+
+
 def displayTime(surf, fps):
     fontObj = pygame.font.Font(TEXT_FONT, 16)
     font_time = pygame.font.Font(TEXT_FONT, 14)
@@ -282,6 +324,8 @@ def displayTime(surf, fps):
 def display_taxi_img(surf, img, h3_coord, car_on = False):
 
     lat, lon = h3.h3_to_geo(h3_coord)  # array of [lat, lng]
+
+    #rect = img.get_rect()
 
     rtn_adj_coord = return_adj_coord([[lat,lon]])
 
