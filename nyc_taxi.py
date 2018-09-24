@@ -93,8 +93,8 @@ class Taxi:
         ## if check_taxiloc() == True
         ## Update status
 
-        if self.call_remain_tm > 0 :
-            self.call_remain_tm = self.call_remain_tm-1
+        if self.crt_call_remain_tm > 0 :
+            self.crt_call_remain_tm = self.crt_call_remain_tm-1
         else:
             self.call_status = False
             self.crt_pos = self.crt_call_des
@@ -257,6 +257,8 @@ def main():
             ['h_dist', 's_cen_lat', 's_cen_lon', 'e_cen_lat', 'e_cen_lon', 's_mins', 'e_mins','eta_mins', 'fare_amount','s_loc','e_loc']].reset_index(drop=True)
 
         display_call(DISPLAYSURF, df_call)
+        display_score(DISPLAYSURF, taxi_a)
+        display_crt_taxi_status(DISPLAYSURF, taxi_a)
 
         if taxi_a.call_status == True :
             taxi_a.update_taxistatus(total_frame)
@@ -302,6 +304,43 @@ import datetime as DT
 
 
 def display_score(surf, taxi_cls):
+    fontObj = pygame.font.Font(TEXT_FONT, 16)
+    font_score = pygame.font.Font(TEXT_FONT, 14)
+
+    surf.blit(fontObj.render('Total calls : ', False, BLACK), (20, 10))
+    surf.blit(fontObj.render('Total dists : ', False, BLACK), (20, 28))
+    surf.blit(fontObj.render('Total incomes : ', False, BLACK), (20, 46))
+
+    str_calls = str(taxi_cls.total_trip)
+    str_dists = str(taxi_cls.total_dist)
+    str_incomes = str(taxi_cls.total_money)
+
+    surf.blit(font_score.render(str_calls, False, BLUE), (150, 10))
+    surf.blit(font_score.render(str_dists, False, BLUE), (150, 28))
+    surf.blit(font_score.render(str_incomes, False, BLUE), (150, 46))
+
+    return 0
+
+def display_crt_taxi_status(surf, taxi_cls):
+    fontObj = pygame.font.Font(TEXT_FONT, 16)
+    font_score = pygame.font.Font(TEXT_FONT, 14)
+
+
+    surf.blit(fontObj.render('Call on : ', False, BLACK), (20, 70))
+    surf.blit(fontObj.render('Des Pos : ', False, BLACK), (20, 88))
+    surf.blit(fontObj.render('Remain Time : ', False, BLACK), (20, 106))
+
+    if taxi_cls.call_status == True:
+        str_calls = 'True'
+    else :
+        str_calls = 'False'
+
+    str_des = str(taxi_cls.crt_call_des)
+    str_time = str(taxi_cls.crt_call_remain_tm)
+
+    surf.blit(font_score.render(str_calls, False, BLUE), (150, 70))
+    surf.blit(font_score.render(str_des, False, BLUE), (150, 88))
+    surf.blit(font_score.render(str_time, False, BLUE), (150, 106))
 
     return 0
 
