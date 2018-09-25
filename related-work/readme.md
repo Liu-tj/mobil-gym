@@ -21,3 +21,5 @@
  [[link]](https://blog.goodaudience.com/taxi-demand-prediction-new-york-city-5e7b12305475)
 
 - (8) Machine Learning for Real-time Demand Forecasting [[pdf]](https://dspace.mit.edu/bitstream/handle/1721.1/99565/924315586-MIT.pdf?sequence=1)
+
+- (9) Uber vs. Taxi: A Driver’s Eye View [[pdf]](http://economics.mit.edu/files/13947)
