@@ -23,3 +23,6 @@
 - (8) Machine Learning for Real-time Demand Forecasting [[pdf]](https://dspace.mit.edu/bitstream/handle/1721.1/99565/924315586-MIT.pdf?sequence=1)
 
 - (9) Uber vs. Taxi: A Driver’s Eye View [[pdf]](http://economics.mit.edu/files/13947)
+
+
+- (10) Taxi Driving Behavior Analysis in Latent Vehicle-to-Vehicle Networks: A Social Influence Perspective [[pdf]](http://www.kdd.org/kdd2016/papers/files/rfp1012-xuA.pdf)
