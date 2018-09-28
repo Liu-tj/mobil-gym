@@ -16,3 +16,15 @@
 - (5) Optimization of the Revenue of the New York City Taxi (2017) [[pdf]](https://www.thinkmind.org/download.php?articleid=data_analytics_2017_4_10_68005)
 
 - (6) Open AI Gym Taxi-v2 [[link]](https://gym.openai.com/envs/Taxi-v2/)
+
+- (7) Taxi Demand Prediction- New York City
+ [[link]](https://blog.goodaudience.com/taxi-demand-prediction-new-york-city-5e7b12305475)
+
+- (8) Machine Learning for Real-time Demand Forecasting [[pdf]](https://dspace.mit.edu/bitstream/handle/1721.1/99565/924315586-MIT.pdf?sequence=1)
+
+- (9) Uber vs. Taxi: A Driver’s Eye View [[pdf]](http://economics.mit.edu/files/13947)
+
+
+- (10) Taxi Driving Behavior Analysis in Latent Vehicle-to-Vehicle Networks: A Social Influence Perspective [[pdf]](http://www.kdd.org/kdd2016/papers/files/rfp1012-xuA.pdf)
+
+- (11) Optimal Pricing for Improving Efficiency of Taxi Systems [[pdf]](https://www.ijcai.org/Proceedings/13/Papers/414.pdf)
