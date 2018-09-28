@@ -222,7 +222,7 @@ def main():
     df_0510['s_mins'] = df_0510['s_time'].apply(apply_etamins)
     df_0510['e_mins'] = df_0510['e_time'].apply(apply_etamins)
 
-
+    df_hour_prob = pd.read_csv('./nyc_data/hours_prob.csv')
 
     ## Image Load
 
