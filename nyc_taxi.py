@@ -89,6 +89,8 @@ class Taxi:
         self.crt_call_eta = 0
         self.crt_call_money = 0
         self.taxi_attribute = None ## Taxi property
+        self.crt_wait_tm = 0       ## Call waiting Time
+        self.crt_drive_tm_no_pass = 0  ## Taxi drive to other cell without Pass
         self.total_trip = 0
         self.total_dist = 0
         self.total_money = 0
@@ -131,8 +133,12 @@ class Taxi:
 
     def check_taxigetcall(self, df_call):
 
+        ## Within 1 min - All call list
         df_crt_pos = df_call[(df_call['s_loc']==self.crt_pos)]
 
+        ## Driver's call selection attribute
+        ## For testing - it set to be randomly selected
+        ##
         driver_prone = self.taxi_attribute
 
         if len(df_crt_pos) > 0:
@@ -158,6 +164,8 @@ class Taxi:
                 df_tmp2 = df_crt_pos[(df_crt_pos['eta_mins'] == df_crt_pos['eta_mins'].min())]
 
             if driver_prone == 4: ## Waiting
+                ## Decide not to take current Call
+                ## After This call -> Choosing the Moving Action
                 return False
 
             ## df_tmp2 - Col list
@@ -187,6 +195,7 @@ class Taxi:
             return True
         else :
             ## Not Get Call
+            ## Waitting until some call is activated in cell
             return False
 
     def display_taxiimg(self):
