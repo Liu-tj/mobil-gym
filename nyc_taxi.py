@@ -79,14 +79,15 @@ class Taxi:
         self.img_on = img_on
         self.img_off = img_off
         self.call_status = False  ## True - Pass - on, False
+        self.out_cell_move = False
         self.crt_pos = crt_pos  ## h3 index
-        self.crt_call_ori = None ## h3 index
-        self.crt_call_des = None ## h3 index
-        self.crt_call_stm = 0      ## Start Total mins
-        self.crt_call_etm = 0      ## Estimated Arrival Total mins
-        self.crt_call_remain_tm = 0 ##
-        self.crt_call_dist = 0
-        self.crt_call_eta = 0
+        self.crt_ori = None ## h3 index
+        self.crt_des = None ## h3 index
+        self.crt_move_stm = 0      ## Start Total mins
+        self.crt_move_etm = 0      ## Estimated Arrival Total mins
+        self.crt_move_remain_tm = 0 ##
+        self.crt_move_dist = 0
+        self.crt_move_eta = 0
         self.crt_call_money = 0
         self.taxi_attribute = None ## Taxi property
         self.crt_wait_tm = 0       ## Call waiting Time
@@ -97,7 +98,7 @@ class Taxi:
 
 
     def check_taxiloc(self):
-        if self.crt_pos == self.call_des :
+        if self.crt_pos == self.crt_des :
             ## If arrived destination
             ## Update
             return True
@@ -105,26 +106,28 @@ class Taxi:
             return False
 
     def update_taxistatus(self, frame):
+        ## Taxi Movement Status Update
         ## if check_taxiloc() == True
         ## Update status
 
-        if self.crt_call_remain_tm > 0 :
-            self.crt_call_remain_tm = self.crt_call_remain_tm-1
+        if self.crt_move_remain_tm > 0 :
+            self.crt_move_remain_tm = self.crt_move_remain_tm-1
         else:
             self.call_status = False
-            self.crt_pos = self.crt_call_des
+            self.out_cell_move = False
+            self.crt_pos = self.crt_des
 
             self.total_trip = self.total_trip + 1
-            self.total_dist = self.total_dist + self.crt_call_dist
+            self.total_dist = self.total_dist + self.crt_move_dist
             self.total_money = self.total_money + self.crt_call_money
 
-            self.crt_call_ori = None  ## h3 index
-            self.crt_call_des = None  ## h3 index
-            self.crt_call_stm = 0  ## Start Total mins
-            self.crt_call_etm = 0  ## Estimated Arrival Total mins
-            self.crt_call_remain_tm = 0  ##
-            self.crt_call_dist = 0
-            self.crt_call_eta = 0
+            self.crt_ori = None  ## h3 index
+            self.crt_des = None  ## h3 index
+            self.crt_move_stm = 0  ## Start Total mins
+            self.crt_move_etm = 0  ## Estimated Arrival Total mins
+            self.crt_move_remain_tm = 0  ##
+            self.crt_move_dist = 0
+            self.crt_move_eta = 0
             self.crt_call_money = 0
 
 
@@ -182,13 +185,13 @@ class Taxi:
             ##10- e_loc
 
             self.call_status = True
-            self.crt_call_ori = df_tmp2.iloc[0, 9 ]
-            self.crt_call_des = df_tmp2.iloc[0, 10]
-            self.crt_call_stm = df_tmp2.iloc[0, 5]
-            self.crt_call_etm = df_tmp2.iloc[0, 6]
-            self.crt_call_remain_tm = df_tmp2.iloc[0, 7]
-            self.crt_call_dist = df_tmp2.iloc[0, 0]
-            self.crt_call_eta = df_tmp2.iloc[0, 7]
+            self.crt_ori = df_tmp2.iloc[0, 9 ]
+            self.crt_des = df_tmp2.iloc[0, 10]
+            self.crt_move_stm = df_tmp2.iloc[0, 5]
+            self.crt_move_etm = df_tmp2.iloc[0, 6]
+            self.crt_move_remain_tm = df_tmp2.iloc[0, 7]
+            self.crt_move_dist = df_tmp2.iloc[0, 0]
+            self.crt_move_eta = df_tmp2.iloc[0, 7]
             self.crt_call_money = df_tmp2.iloc[0, 8]
 
             ## Get Call
@@ -197,6 +200,15 @@ class Taxi:
             ## Not Get Call
             ## Waitting until some call is activated in cell
             return False
+
+
+    def check_taximove(self):
+
+        ##
+
+        return False
+
+
 
     def display_taxiimg(self):
         return 0
@@ -279,13 +291,30 @@ def main():
         display_score(DISPLAYSURF, taxi_a)
         display_crt_taxi_status(DISPLAYSURF, taxi_a)
 
+
+        ## Check Current taxi status
+        if taxi_a.call_status == True & taxi_a.out_cell_move == True :
+            ## Getted Call and Moving Out - cell des
+            crt_taxi_pass = taxi_a.img_on
+
+        elif taxi_a.call_status == False & taxi_a.out_cell_move == False :
+            ## Watting in - Cell loc
+            crt_taxi_pass = taxi_a.img_off
+
+        elif taxi_a.call_status == True & taxi_a.out_cell_move == False:
+            ## Getted Call and Moving in - cell des
+            crt_taxi_pass = taxi_a.img_on
+
+        elif taxi_a.call_status == False & taxi_a.out_cell_move == True:
+            ## Moving without pass out - cell loc
+            crt_taxi_pass = taxi_a.img_off
+
         if taxi_a.call_status == True :
             taxi_a.update_taxistatus(total_frame)
-            display_taxi_img(DISPLAYSURF, taxi_a.img_on, taxi_a.crt_pos)
         else:
             taxi_a.check_taxigetcall(df_call)
-            display_taxi_img(DISPLAYSURF, taxi_a.img_off, taxi_a.crt_pos)
 
+        display_taxi_img(DISPLAYSURF, crt_taxi_pass, taxi_a.crt_pos)
 
         if total_frame > 1439:
             total_frame = 0
@@ -352,15 +381,15 @@ def display_crt_taxi_status(surf, taxi_cls):
     if taxi_cls.call_status == True:
         str_calls = 'True'
 
-        bound_list = h3.h3_to_geo_boundary(taxi_cls.crt_call_des)
+        bound_list = h3.h3_to_geo_boundary(taxi_cls.crt_des)
         adj_bound_list = return_adj_coord(bound_list)
         pygame.draw.polygon(surf, BRIGHTBLUE, adj_bound_list, 2)
 
     else :
         str_calls = 'False'
 
-    str_des = str(taxi_cls.crt_call_des)
-    str_time = str(taxi_cls.crt_call_remain_tm)
+    str_des = str(taxi_cls.crt_des)
+    str_time = str(taxi_cls.crt_move_remain_tm)
 
     surf.blit(font_score.render(str_calls, False, BLUE), (150, 70))
     surf.blit(font_score.render(str_des, False, BLUE), (150, 88))
