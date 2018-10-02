@@ -194,7 +194,7 @@ class Taxi:
 
             if self.crt_ori != self.crt_des :
                 self.out_cell_move = True
-            else
+            else:
                 self.out_cell_move = False
 
             self.crt_move_stm = df_tmp2.iloc[0, 5]
