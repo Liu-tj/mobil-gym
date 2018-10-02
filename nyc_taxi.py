@@ -60,6 +60,8 @@ lon_div =  WINDOWWIDTH / (right_border - left_border)
 
 DRIVER_PROP = 0
 
+TAXI_MOVE_PROB = [0.7, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05]
+
 RANDOM_START_LOCATION = ["882a1072cbfffff",
                         "882a100d65fffff",
                         "882a100d61fffff",
@@ -90,7 +92,7 @@ class Taxi:
         self.crt_move_eta = 0
         self.crt_call_money = 0
         self.taxi_attribute = None ## Taxi property
-        self.crt_wait_tm = 0       ## Call waiting Time
+        self.total_wait_tm = 0       ## Call waiting Time
         self.crt_drive_tm_no_pass = 0  ## Taxi drive to other cell without Pass
         self.total_trip = 0
         self.total_dist = 0
@@ -113,18 +115,20 @@ class Taxi:
         if self.crt_move_remain_tm > 0 :
             self.crt_move_remain_tm = self.crt_move_remain_tm-1
         else:
-            self.call_status = False
             self.out_cell_move = False
             self.crt_pos = self.crt_des
 
-            self.total_trip = self.total_trip + 1
+            if self.call_status == True :
+                self.total_trip = self.total_trip + 1
+                self.total_money = self.total_money + self.crt_call_money
+
             self.total_dist = self.total_dist + self.crt_move_dist
-            self.total_money = self.total_money + self.crt_call_money
+            self.call_status = False
 
             self.crt_ori = None  ## h3 index
             self.crt_des = None  ## h3 index
-            self.crt_move_stm = 0  ## Start Total mins
-            self.crt_move_etm = 0  ## Estimated Arrival Total mins
+            self.crt_move_stm = 0  ## Start Total mins   ( Frame )
+            self.crt_move_etm = 0  ## Estimated Arrival Total mins  ( Frame )
             self.crt_move_remain_tm = 0  ##
             self.crt_move_dist = 0
             self.crt_move_eta = 0
@@ -187,6 +191,12 @@ class Taxi:
             self.call_status = True
             self.crt_ori = df_tmp2.iloc[0, 9 ]
             self.crt_des = df_tmp2.iloc[0, 10]
+
+            if self.crt_ori != self.crt_des :
+                self.out_cell_move = True
+            else
+                self.out_cell_move = False
+
             self.crt_move_stm = df_tmp2.iloc[0, 5]
             self.crt_move_etm = df_tmp2.iloc[0, 6]
             self.crt_move_remain_tm = df_tmp2.iloc[0, 7]
@@ -202,11 +212,34 @@ class Taxi:
             return False
 
 
-    def check_taximove(self):
+    def check_taximove(self, prob =TAXI_MOVE_PROB ):
 
-        ##
+        ## When check_taxigetcall return False ->
+        ## Decide to wait ( in - cell ) or go out - cell
 
-        return False
+        ## Decision to wait : selected location = self.crt_pos
+        ## Decision to go out - cell : selected location != self.crt_pos
+
+        ## Pre-defined Prob TAXI_MOVE_PROB = [0.7, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05]
+
+        nearby_coord_list = return_nearby_coord(self.crt_pos)
+
+        select_loc = nearby_coord_list[np.random.choice(np.arange(0, len(nearby_coord_list)), p=prob)]
+
+
+        if select_loc != self.crt_pos:
+
+            tmp_eta = random.randint(4,6)
+            self.out_cell_move = True
+            self.crt_ori = self.crt_pos
+            self.crt_des = select_loc
+            self.crt_move_remain_tm = tmp_eta
+            self.crt_move_dist = 1
+            self.crt_move_eta = tmp_eta
+        else:
+            self.out_cell_move = False
+
+        return 0
 
 
 
@@ -377,6 +410,7 @@ def display_crt_taxi_status(surf, taxi_cls):
     surf.blit(fontObj.render('Call on : ', False, BLACK), (20, 70))
     surf.blit(fontObj.render('Des Pos(H3) : ', False, BLACK), (20, 88))
     surf.blit(fontObj.render('Remain Time : ', False, BLACK), (20, 106))
+    surf.blit(fontObj.render('Taxi Status : ', False, BLACK), (20, 124))
 
     if taxi_cls.call_status == True:
         str_calls = 'True'
@@ -385,8 +419,17 @@ def display_crt_taxi_status(surf, taxi_cls):
         adj_bound_list = return_adj_coord(bound_list)
         pygame.draw.polygon(surf, BRIGHTBLUE, adj_bound_list, 2)
 
+        if taxi_cls.out_cell_move == True:
+            str_taxi_status = 'Out-Call On'
+        else :
+            str_taxi_status = 'In-Call On'
     else :
         str_calls = 'False'
+
+        if taxi_cls.out_cell_move == True:
+            str_taxi_status = 'Out-Call off'
+        else :
+            str_taxi_status = 'In-Call off'
 
     str_des = str(taxi_cls.crt_des)
     str_time = str(taxi_cls.crt_move_remain_tm)
@@ -394,6 +437,7 @@ def display_crt_taxi_status(surf, taxi_cls):
     surf.blit(font_score.render(str_calls, False, BLUE), (150, 70))
     surf.blit(font_score.render(str_des, False, BLUE), (150, 88))
     surf.blit(font_score.render(str_time, False, BLUE), (150, 106))
+    surf.blit(font_score.render(str_taxi_status, False, BLUE), (150, 124))
 
     return 0
 
@@ -456,6 +500,19 @@ def display_test_call(surf, df_call):
 
     return 0
 
+def return_nearby_coord(h3_address, dist=1):
+
+    ## Get H3-coord then return nearby 6 coord + center - location
+
+    tmp = h3.k_ring_distances(h3_address, dist)
+    rtn_list = []
+
+    for item in tmp:
+        tmp2 = list(item)
+        for item2 in tmp2:
+            rtn_list.append(item2)
+
+    return rtn_list
 
 
 def return_adj_coord(tmp):
