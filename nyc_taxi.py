@@ -7,6 +7,8 @@ import random, sys
 from time import sleep
 from pygame.locals import *
 from h3 import h3
+import datetime as DT
+import math
 
 ## Hyper Parameter
 
@@ -361,7 +363,11 @@ def main():
          #       c_status = updateCarStatus(c_status, origin_call_list[frame])
                 frame = frame + 1
 
+        ##################################################
+        ## Test Display
+        display_test(DISPLAYSURF)
 
+        ##################################################
 
         #if total_frame % 30 == 0 :
         #    c_status = updateCarPos(c_status)
@@ -381,7 +387,20 @@ def main():
         FPSCLOCK.tick(FPS)
 
 
-import datetime as DT
+
+
+
+def display_test(surf):
+    ori = h3.h3_to_geo('882a1072cdfffff')
+    des = h3.h3_to_geo('882a100d39fffff')
+
+    y1, x1 = ori
+    y2, x2 = des
+
+    display_dot(surf, x1, y1, l_color=BLACK)
+    display_dot(surf, x2, y2, l_color=BLACK)
+
+    return 0
 
 
 def display_score(surf, taxi_cls):
@@ -533,7 +552,7 @@ def display_dot(surf, x, y, l_color=RED):
     #adj_y = y
 
     adj_coord = return_adj_coord([[y,x]])
-    pygame.draw.circle(surf, l_color, adj_coord, 3)
+    pygame.draw.circle(surf, l_color, (int(adj_coord[0][0]),int(adj_coord[0][1])) , 3)
 
 
 def display_hexagon(surf, x, y, l_color=RED):
@@ -550,6 +569,20 @@ def apply_etamins(col):
     t2 = DT.datetime(2016, 5, 10)
     return (col - t2).total_seconds() // 60
 
+
+def distance(origin, destination):
+    lat1, lon1 = origin
+    lat2, lon2 = destination
+    radius = 6371 # km
+
+    dlat = math.radians(lat2-lat1)
+    dlon = math.radians(lon2-lon1)
+    a = math.sin(dlat/2) * math.sin(dlat/2) + math.cos(math.radians(lat1)) \
+        * math.cos(math.radians(lat2)) * math.sin(dlon/2) * math.sin(dlon/2)
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+    d = radius * c
+
+    return d ## in km distance
 
 
 if __name__ == '__main__':
