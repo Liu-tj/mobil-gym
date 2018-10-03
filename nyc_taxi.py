@@ -62,6 +62,7 @@ lon_div =  WINDOWWIDTH / (right_border - left_border)
 
 DRIVER_PROP = 0
 
+DRIVER_PROP_PROB = [0.3, 0.1, 0.25, 0.15, 0.2]
 TAXI_MOVE_PROB = [0.7, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05]
 
 RANDOM_START_LOCATION = ["882a1072cbfffff",
@@ -125,6 +126,9 @@ class Taxi:
             self.crt_move_x = self.crt_move_lst_x.pop(0)
             self.crt_move_y = self.crt_move_lst_y.pop(0)
 
+            if self.call_status == False:
+                self.total_wait_tm = self.total_wait_tm  + 1
+
         else:
             self.out_cell_move = False
             self.crt_pos = self.crt_des
@@ -155,7 +159,7 @@ class Taxi:
         return 0
 
 
-    def check_taxigetcall(self, df_call):
+    def check_taxigetcall(self, df_call, prob=DRIVER_PROP_PROB):
 
         ## Within 1 min - All call list
         df_crt_pos = df_call[(df_call['s_loc']==self.crt_pos)]
@@ -163,7 +167,11 @@ class Taxi:
         ## Driver's call selection attribute
         ## For testing - it set to be randomly selected
         ##
-        driver_prone = self.taxi_attribute
+        #driver_prone = self.taxi_attribute
+
+        driver_prone = np.random.choice(np.arange(0, len(prob)), p=prob)
+
+        self.taxi_attribute = driver_prone
 
         if len(df_crt_pos) > 0:
             ## There is a call in crt_pos
@@ -190,6 +198,8 @@ class Taxi:
             if driver_prone == 4: ## Waiting
                 ## Decide not to take current Call
                 ## After This call -> Choosing the Moving Action
+                self.check_taximove()
+                self.total_wait_tm = self.total_wait_tm + 1
                 return False
 
             ## df_tmp2 - Col list
@@ -233,6 +243,8 @@ class Taxi:
         else :
             ## Not Get Call
             ## Waitting until some call is activated in cell
+            self.check_taximove()
+            self.total_wait_tm = self.total_wait_tm + 1
             return False
 
 
@@ -356,28 +368,33 @@ def main():
         display_score(DISPLAYSURF, taxi_a)
         display_crt_taxi_status(DISPLAYSURF, taxi_a)
 
-
         ## Check Current taxi status
         if taxi_a.call_status == True & taxi_a.out_cell_move == True :
             ## Getted Call and Moving Out - cell des
             crt_taxi_pass = taxi_a.img_on
+            taxi_a.update_taxistatus(total_frame)
 
         elif taxi_a.call_status == False & taxi_a.out_cell_move == False :
             ## Watting in - Cell loc
             crt_taxi_pass = taxi_a.img_off
+            taxi_a.check_taxigetcall(df_call)
 
         elif taxi_a.call_status == True & taxi_a.out_cell_move == False:
             ## Getted Call and Moving in - cell des
             crt_taxi_pass = taxi_a.img_on
+            taxi_a.update_taxistatus(total_frame)
 
         elif taxi_a.call_status == False & taxi_a.out_cell_move == True:
             ## Moving without pass out - cell loc
             crt_taxi_pass = taxi_a.img_off
-
-        if taxi_a.call_status == True :
             taxi_a.update_taxistatus(total_frame)
-        else:
-            taxi_a.check_taxigetcall(df_call)
+
+
+
+        #if taxi_a.call_status == True :
+        #    taxi_a.update_taxistatus(total_frame)
+        #else:
+        #    taxi_a.check_taxigetcall(df_call)
 
         taxi_pos_h3 = h3.geo_to_h3(taxi_a.crt_move_y,taxi_a.crt_move_x, 8)
 
@@ -397,7 +414,7 @@ def main():
 
         ##################################################
         ## Test Display
-        display_test(DISPLAYSURF)
+        # display_test(DISPLAYSURF)
 
         ##################################################
 
@@ -462,25 +479,33 @@ def display_crt_taxi_status(surf, taxi_cls):
     surf.blit(fontObj.render('Des Pos(H3) : ', False, BLACK), (20, 88))
     surf.blit(fontObj.render('Remain Time : ', False, BLACK), (20, 106))
     surf.blit(fontObj.render('Taxi Status : ', False, BLACK), (20, 124))
+    surf.blit(fontObj.render('T-Wait Tm : ', False, BLACK), (20, 142))
+    surf.blit(fontObj.render('Driver Prone : ', False, BLACK), (20, 160))
 
     if taxi_cls.call_status == True:
         str_calls = 'True'
 
-        bound_list = h3.h3_to_geo_boundary(taxi_cls.crt_des)
-        adj_bound_list = return_adj_coord(bound_list)
-        pygame.draw.polygon(surf, BRIGHTBLUE, adj_bound_list, 2)
+        #bound_list = h3.h3_to_geo_boundary(taxi_cls.crt_des)
+        #adj_bound_list = return_adj_coord(bound_list)
+
+        lat, lon = h3.h3_to_geo(taxi_cls.crt_des)  # array of [lat, lng]
+        rtn_adj_coord = return_adj_coord([[lat, lon]])
+
+        #pygame.draw.polygon(surf, BRIGHTBLUE, adj_bound_list, 2)
+
+        pygame.draw.circle(surf, BRIGHTBLUE, (int(rtn_adj_coord[0][0]), int(rtn_adj_coord[0][1])), 3)
 
         if taxi_cls.out_cell_move == True:
-            str_taxi_status = 'Out-Call On'
+            str_taxi_status = 'Out-cell On'
         else :
-            str_taxi_status = 'In-Call On'
+            str_taxi_status = 'In-cell On'
     else :
         str_calls = 'False'
 
         if taxi_cls.out_cell_move == True:
-            str_taxi_status = 'Out-Call off'
+            str_taxi_status = 'Out-cell off'
         else :
-            str_taxi_status = 'In-Call off'
+            str_taxi_status = 'In-cell off'
 
     str_des = str(taxi_cls.crt_des)
     str_time = str(taxi_cls.crt_move_remain_tm)
@@ -489,6 +514,9 @@ def display_crt_taxi_status(surf, taxi_cls):
     surf.blit(font_score.render(str_des, False, BLUE), (150, 88))
     surf.blit(font_score.render(str_time, False, BLUE), (150, 106))
     surf.blit(font_score.render(str_taxi_status, False, BLUE), (150, 124))
+    surf.blit(font_score.render(str(taxi_cls.total_wait_tm), False, BLUE), (150, 142))
+
+    surf.blit(font_score.render(str(taxi_cls.taxi_attribute), False, BLUE), (150, 160))
 
     return 0
 
