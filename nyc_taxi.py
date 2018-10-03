@@ -89,6 +89,11 @@ class Taxi:
         self.crt_des = None ## h3 index
         self.crt_move_stm = 0      ## Start Total mins
         self.crt_move_etm = 0      ## Estimated Arrival Total mins
+        self.crt_move_lst_x = 0     ## Moving Sequence List X - longitude
+        self.crt_move_lst_y = 0     ## Moving Sequence List Y - Latitude
+        #self.crt_move_x = 0
+        #self.crt_move_y = 0
+        self.crt_move_y, self.crt_move_x = h3.h3_to_geo(self.crt_pos)
         self.crt_move_remain_tm = 0 ##
         self.crt_move_dist = 0
         self.crt_move_eta = 0
@@ -116,6 +121,10 @@ class Taxi:
 
         if self.crt_move_remain_tm > 0 :
             self.crt_move_remain_tm = self.crt_move_remain_tm-1
+
+            self.crt_move_x = self.crt_move_lst_x.pop(0)
+            self.crt_move_y = self.crt_move_lst_y.pop(0)
+
         else:
             self.out_cell_move = False
             self.crt_pos = self.crt_des
@@ -131,6 +140,12 @@ class Taxi:
             self.crt_des = None  ## h3 index
             self.crt_move_stm = 0  ## Start Total mins   ( Frame )
             self.crt_move_etm = 0  ## Estimated Arrival Total mins  ( Frame )
+            self.crt_move_lst_x = 0  ## Moving Sequence List X - longitude
+            self.crt_move_lst_y = 0  ## Moving Sequence List Y - Latitude
+
+            self.crt_move_y, self.crt_move_x = h3.h3_to_geo(self.crt_pos)
+            #self.crt_move_x = 0
+            #self.crt_move_y = 0
             self.crt_move_remain_tm = 0  ##
             self.crt_move_dist = 0
             self.crt_move_eta = 0
@@ -206,6 +221,13 @@ class Taxi:
             self.crt_move_eta = df_tmp2.iloc[0, 7]
             self.crt_call_money = df_tmp2.iloc[0, 8]
 
+            ori_coords = h3.h3_to_geo(self.crt_ori)
+            des_coords = h3.h3_to_geo(self.crt_des)
+            self.crt_move_lst_x, self.crt_move_lst_y = get_linspace(ori_coords, des_coords, self.crt_move_remain_tm)
+
+            self.crt_move_x = self.crt_move_lst_x[0]
+            self.crt_move_y = self.crt_move_lst_y[0]
+
             ## Get Call
             return True
         else :
@@ -238,6 +260,14 @@ class Taxi:
             self.crt_move_remain_tm = tmp_eta
             self.crt_move_dist = 1
             self.crt_move_eta = tmp_eta
+
+            ori_coords = h3.h3_to_geo(self.crt_ori)
+            des_coords = h3.h3_to_geo(self.crt_des)
+            self.crt_move_lst_x, self.crt_move_lst_y = get_linspace(ori_coords, des_coords, self.crt_move_remain_tm)
+
+            self.crt_move_x = self.crt_move_lst_x[0]
+            self.crt_move_y = self.crt_move_lst_y[0]
+
         else:
             self.out_cell_move = False
 
@@ -349,7 +379,9 @@ def main():
         else:
             taxi_a.check_taxigetcall(df_call)
 
-        display_taxi_img(DISPLAYSURF, crt_taxi_pass, taxi_a.crt_pos)
+        taxi_pos_h3 = h3.geo_to_h3(taxi_a.crt_move_y,taxi_a.crt_move_x, 8)
+
+        display_taxi_img(DISPLAYSURF, crt_taxi_pass, taxi_pos_h3)#taxi_a.crt_pos)
 
         if total_frame > 1439:
             total_frame = 0
@@ -584,6 +616,15 @@ def distance(origin, destination):
 
     return d ## in km distance
 
+
+def get_linspace(ori,des,space_num):
+    y1, x1 = ori
+    y2, x2 = des
+
+    rtn_x_list = list(np.linspace(x1, x2, int(space_num+1)) )
+    rtn_y_list = list(np.linspace(y1, y2, int(space_num+1)) )
+
+    return rtn_x_list , rtn_y_list
 
 if __name__ == '__main__':
     main()
