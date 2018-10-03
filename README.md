@@ -9,6 +9,14 @@
 
 <br>
 
+(4) 2018-10-03 (NYC)
+ - Taxi moving trajectory added
+ - Bug report A. : while waiting -> remain tm update error
+ - Bug report B. : when waiting / No call, taxi moving update error
+ - Need more ft. : calculate score ( + for income  - for waiting )
+ - How to calculate expected score or reward
+
+
 (3) 2018-09-30 (NYC)
 
 - single taxi sim
