@@ -65,6 +65,10 @@ DRIVER_PROP = 0
 DRIVER_PROP_PROB = [0.3, 0.1, 0.25, 0.15, 0.2]
 TAXI_MOVE_PROB = [0.7, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05]
 
+
+## Not Get a call Location = '882a107733fffff'
+TEMP_ST_LOC = '882a107733fffff'
+
 RANDOM_START_LOCATION = ["882a1072cbfffff",
                         "882a100d65fffff",
                         "882a100d61fffff",
@@ -83,8 +87,9 @@ class Taxi:
     def __init__(self, img_on, img_off, crt_pos):
         self.img_on = img_on
         self.img_off = img_off
-        self.call_status = False  ## True - Pass - on, False
+        self.call_status = False  ## True - Pass - on, False - Call waiting
         self.out_cell_move = False
+        self.str_taxi_status = None
         self.crt_pos = crt_pos  ## h3 index
         self.crt_ori = None ## h3 index
         self.crt_des = None ## h3 index
@@ -98,6 +103,7 @@ class Taxi:
         self.crt_move_remain_tm = 0 ##
         self.crt_move_dist = 0
         self.crt_move_eta = 0
+        self.crt_moving = False   ## taxi is moving ? true - moving , false -
         self.crt_call_money = 0
         self.taxi_attribute = None ## Taxi property
         self.total_wait_tm = 0       ## Call waiting Time
@@ -130,6 +136,10 @@ class Taxi:
                 self.total_wait_tm = self.total_wait_tm  + 1
 
         else:
+            self.crt_moving = False
+
+        if self.crt_moving == True :
+
             self.out_cell_move = False
             self.crt_pos = self.crt_des
 
@@ -172,6 +182,12 @@ class Taxi:
         driver_prone = np.random.choice(np.arange(0, len(prob)), p=prob)
 
         self.taxi_attribute = driver_prone
+
+        #################
+        ## Test Code
+        driver_prone = 2
+
+        self.str_taxi_status = 'Get Call'
 
         if len(df_crt_pos) > 0:
             ## There is a call in crt_pos
@@ -265,7 +281,9 @@ class Taxi:
 
         if select_loc != self.crt_pos:
 
+            ## Out cell move while waiting
             tmp_eta = random.randint(4,6)
+            self.str_taxi_status = 'Wait out Move'
             self.out_cell_move = True
             self.crt_ori = self.crt_pos
             self.crt_des = select_loc
@@ -281,7 +299,10 @@ class Taxi:
             self.crt_move_y = self.crt_move_lst_y[0]
 
         else:
+
+            ## in - cell waiting
             self.out_cell_move = False
+            self.str_taxi_status = 'Wait'
 
         return 0
 
@@ -342,8 +363,9 @@ def main():
 
 
 
-    taxi_a = Taxi(IMG_CAR_ON, IMG_CAR_OFF,
-                  RANDOM_START_LOCATION[random.randint(0, len(RANDOM_START_LOCATION))])
+    taxi_a = Taxi(IMG_CAR_ON, IMG_CAR_OFF, TEMP_ST_LOC ) #= '882a107733fffff'
+
+                  #RANDOM_START_LOCATION[random.randint(0, len(RANDOM_START_LOCATION))])
     taxi_a.taxi_attribute = DRIVER_PROP
 
     total_frame = 0
@@ -357,44 +379,52 @@ def main():
         DISPLAYSURF.fill(WHITE)
         DISPLAYSURF.blit(MAP_IMG, (0, 0))
 
-        displayTime(DISPLAYSURF, total_frame)
-        #displayGrid(DISPLAYSURF, grid=5)
-
         ## check the call data ( Current Time Frame Call )
-        df_call = df_0510[(df_0510['s_mins'] ==total_frame)][
-            ['h_dist', 's_cen_lat', 's_cen_lon', 'e_cen_lat', 'e_cen_lon', 's_mins', 'e_mins','eta_mins', 'fare_amount','s_loc','e_loc']].reset_index(drop=True)
+        df_call = df_0510[(df_0510['s_mins'] == total_frame)][
+            ['h_dist', 's_cen_lat', 's_cen_lon', 'e_cen_lat', 'e_cen_lon', 's_mins', 'e_mins', 'eta_mins',
+             'fare_amount', 's_loc', 'e_loc']].reset_index(drop=True)
+
+
+        ## Check Current taxi status
+        taxi_a.update_taxistatus(total_frame)
+
+        if taxi_a.call_status == False:
+            taxi_a.check_taxigetcall(df_call)
+            crt_taxi_pass = taxi_a.img_off
+        else:
+            crt_taxi_pass = taxi_a.img_on
+
+
+        displayTime(DISPLAYSURF, total_frame)
+
 
         display_call(DISPLAYSURF, df_call)
         display_score(DISPLAYSURF, taxi_a)
         display_crt_taxi_status(DISPLAYSURF, taxi_a)
 
         ## Check Current taxi status
-        if taxi_a.call_status == True & taxi_a.out_cell_move == True :
+        ## if taxi_a.call_status == True & taxi_a.out_cell_move == True :
             ## Getted Call and Moving Out - cell des
-            crt_taxi_pass = taxi_a.img_on
-            taxi_a.update_taxistatus(total_frame)
+        ##    crt_taxi_pass = taxi_a.img_on
+        ##    taxi_a.update_taxistatus(total_frame)
 
-        elif taxi_a.call_status == False & taxi_a.out_cell_move == False :
+        ## elif taxi_a.call_status == False & taxi_a.out_cell_move == False :
             ## Watting in - Cell loc
-            crt_taxi_pass = taxi_a.img_off
-            taxi_a.check_taxigetcall(df_call)
+        ##    crt_taxi_pass = taxi_a.img_off
+        ##   taxi_a.check_taxigetcall(df_call)
 
-        elif taxi_a.call_status == True & taxi_a.out_cell_move == False:
+        ## elif taxi_a.call_status == True & taxi_a.out_cell_move == False:
             ## Getted Call and Moving in - cell des
-            crt_taxi_pass = taxi_a.img_on
-            taxi_a.update_taxistatus(total_frame)
+        ##    crt_taxi_pass = taxi_a.img_on
+        ##    taxi_a.update_taxistatus(total_frame)
 
-        elif taxi_a.call_status == False & taxi_a.out_cell_move == True:
+        ## elif taxi_a.call_status == False & taxi_a.out_cell_move == True:
             ## Moving without pass out - cell loc
-            crt_taxi_pass = taxi_a.img_off
-            taxi_a.update_taxistatus(total_frame)
+        ##   crt_taxi_pass = taxi_a.img_off
+        ##    taxi_a.update_taxistatus(total_frame)
 
 
 
-        #if taxi_a.call_status == True :
-        #    taxi_a.update_taxistatus(total_frame)
-        #else:
-        #    taxi_a.check_taxigetcall(df_call)
 
         taxi_pos_h3 = h3.geo_to_h3(taxi_a.crt_move_y,taxi_a.crt_move_x, 8)
 
@@ -513,7 +543,8 @@ def display_crt_taxi_status(surf, taxi_cls):
     surf.blit(font_score.render(str_calls, False, BLUE), (150, 70))
     surf.blit(font_score.render(str_des, False, BLUE), (150, 88))
     surf.blit(font_score.render(str_time, False, BLUE), (150, 106))
-    surf.blit(font_score.render(str_taxi_status, False, BLUE), (150, 124))
+    #surf.blit(font_score.render(str_taxi_status, False, BLUE), (150, 124))
+    surf.blit(font_score.render(taxi_cls.str_taxi_status, False, BLUE), (150, 124))
     surf.blit(font_score.render(str(taxi_cls.total_wait_tm), False, BLUE), (150, 142))
 
     surf.blit(font_score.render(str(taxi_cls.taxi_attribute), False, BLUE), (150, 160))
