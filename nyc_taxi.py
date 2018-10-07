@@ -162,10 +162,20 @@ def main():
 
 
         ## Check Current taxi status
-        taxi_a.update_taxistatus(total_frame)
+        ## Ver 10-06
+        #taxi_a.update_taxistatus(total_frame)
+
+        #if taxi_a.call_status == False:
+        #    taxi_a.check_taxigetcall(df_call)
+        #    crt_taxi_pass = taxi_a.img_off
+        #else:
+        #    crt_taxi_pass = taxi_a.img_on
+
+        ## Ver 10-07
+        taxi_a.crt_pos_call_data = df_call[(df_call['s_loc']==taxi_a.crt_pos)]
+        taxi_a.check_action()
 
         if taxi_a.call_status == False:
-            taxi_a.check_taxigetcall(df_call)
             crt_taxi_pass = taxi_a.img_off
         else:
             crt_taxi_pass = taxi_a.img_on
