@@ -199,9 +199,6 @@ def main():
         ##   crt_taxi_pass = taxi_a.img_off
         ##    taxi_a.update_taxistatus(total_frame)
 
-
-
-
         taxi_pos_h3 = h3.geo_to_h3(taxi_a.crt_move_y,taxi_a.crt_move_x, 8)
 
         display_taxi_img(DISPLAYSURF, crt_taxi_pass, taxi_pos_h3)#taxi_a.crt_pos)
@@ -240,8 +237,6 @@ def main():
 
         sleep(1.5)
         FPSCLOCK.tick(FPS)
-
-
 
 
 

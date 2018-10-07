@@ -88,6 +88,7 @@ class Taxi:
         self.out_cell_move = False
         self.str_taxi_status = None
         self.crt_pos = crt_pos  ## h3 index
+        self.crt_pos_call_data = None
         self.crt_ori = None ## h3 index
         self.crt_des = None ## h3 index
         self.crt_move_stm = 0      ## Start Total mins
@@ -307,6 +308,90 @@ class Taxi:
         return 0
 
     def check_action(self):
+
+
+        ## Every Frame Set Crt-pos as H3
+        self.crt_pos = h3.geo_to_h3(self.crt_move_y, self.crt_move_x, 8)
+
+        ## When Moving -> Moving Taxi 1-frame
+
+        if self.crt_moving == True :
+            if self.crt_move_remain_tm > 0 :
+                self.crt_move_remain_tm = self.crt_move_remain_tm - 1
+
+                if len(self.crt_move_lst_x)>0:
+                    self.crt_move_x = self.crt_move_lst_x.pop(0)
+
+                if len(self.crt_move_lst_y) > 0:
+                    self.crt_move_y = self.crt_move_lst_y.pop(0)
+
+            else :
+                ## Ariving destination
+                self.crt_moving = False
+
+                if self.call_status == True :
+                    # If Taxi arrived with passengers
+                    self.total_trip = self.total_trip + 1
+                    self.total_money = self.total_money + self.crt_call_money
+                    self.call_status = False
+
+                self.total_dist = self.total_dist + self.crt_move_dist
+
+                self.crt_ori = None  ## h3 index
+                self.crt_des = None  ## h3 index
+                self.crt_move_stm = 0  ## Start Total mins   ( Frame )
+                self.crt_move_etm = 0  ## Estimated Arrival Total mins  ( Frame )
+                self.crt_move_lst_x = 0  ## Moving Sequence List X - longitude
+                self.crt_move_lst_y = 0  ## Moving Sequence List Y - Latitude
+
+
+
+
+
+
+        ## self.crt_pos_call_data : Crt Loc' Call Dataframe
+
+        df_crt_pos = self.crt_pos_call_data
+
+        if self.call_status == False :
+            # Get Call
+
+            driver_prone = np.random.choice(np.arange(0, len(prob)), p=prob)
+
+            self.taxi_attribute = driver_prone
+
+            #################
+            ## Test Code
+            driver_prone = 2
+
+            self.str_taxi_status = 'Get Call'
+
+            ## Assess the call Attractiveness
+
+            if len(df_crt_pos) > 0:
+                ## There is a call in crt_pos
+                if driver_prone == 0:  ## get long dist call
+                    df_tmp2 = df_crt_pos[(df_crt_pos['h_dist'] == df_crt_pos['h_dist'].max())]
+
+                if driver_prone == 1:  ## get long eta - call
+                    df_tmp2 = df_crt_pos[(df_crt_pos['eta_mins'] == df_crt_pos['eta_mins'].max())]
+
+                if driver_prone == 2:  ## get short dist - call
+                    df_tmp2 = df_crt_pos[(df_crt_pos['h_dist'] == df_crt_pos['h_dist'].min())]
+
+                if driver_prone == 3:  ## get short eta - call
+                    df_tmp2 = df_crt_pos[(df_crt_pos['eta_mins'] == df_crt_pos['eta_mins'].min())]
+
+                if driver_prone == 4:  ## Waiting
+                    ## Decide not to take current Call
+                    ## After This call -> Choosing the Moving Action
+                    self.check_taximove()
+                    self.total_wait_tm = self.total_wait_tm + 1
+                    return False
+        else:
+
+
+
 
         return 0
 
