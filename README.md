@@ -9,6 +9,13 @@
 
 <br>
 
+(5) 2018-10-07 (NYC)
+ - Taxi Class Modification
+ - Action (random ) based reward
+ - Question : Sequence of Actions -> Reward Prediction ?
+ - All case reward caculcation?
+ - Environment randomness events?
+
 (4) 2018-10-03 (NYC)
  - Taxi moving trajectory added
  - Bug report A. : while waiting -> remain tm update error
