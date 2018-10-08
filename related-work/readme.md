@@ -24,7 +24,10 @@
 
 - (9) Uber vs. Taxi: A Driver’s Eye View [[pdf]](http://economics.mit.edu/files/13947)
 
-
 - (10) Taxi Driving Behavior Analysis in Latent Vehicle-to-Vehicle Networks: A Social Influence Perspective [[pdf]](http://www.kdd.org/kdd2016/papers/files/rfp1012-xuA.pdf)
 
 - (11) Optimal Pricing for Improving Efficiency of Taxi Systems [[pdf]](https://www.ijcai.org/Proceedings/13/Papers/414.pdf)
+
+- (12) Efficient Large-Scale Fleet Management via Multi-Agent Deep
+Reinforcement Learning [[pdf]](https://arxiv.org/pdf/1802.06444.pdf) <br>
+ : Github - https://github.com/illidanlab/Simulator/blob/master/simulator/objects.py
