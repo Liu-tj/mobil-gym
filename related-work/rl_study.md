@@ -5,3 +5,7 @@
 - (1) Reinforcement Learning Course by David Silver (2015) [[link]](https://www.youtube.com/watch?v=2pWv7GOvuf0)
 
 - (2) John Schulman 1: Deep Reinforcement Learning (2016) [[link]](https://www.youtube.com/watch?v=aUrX-rP_ss4&list=PLCTc_C7itk-GaAMxmlChrkPnGKtjz8hv1)
+
+- (3) Evolution Strategies as a Scalable Alternative to Reinforcement Learning (2017)[[link]](https://blog.openai.com/evolution-strategies/)
+
+- (4) Learning: Genetic Algorithms Artificial Intelligence, Fall (2010) [[link]](https://www.youtube.com/watch?v=kHyNqSnzP8Y)
