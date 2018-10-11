@@ -33,4 +33,3 @@ Reinforcement Learning [[pdf]](https://arxiv.org/pdf/1802.06444.pdf) <br>
  : Github - https://github.com/illidanlab/Simulator/blob/master/simulator/objects.py
 
  - (13) Look-Ahead Insertion Policy for a Shared-Taxi System Based on Reinforcement Learning[[pdf]](https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=8094865) <br>
-  
