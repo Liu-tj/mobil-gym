@@ -29,7 +29,11 @@
 - (11) Optimal Pricing for Improving Efficiency of Taxi Systems [[pdf]](https://www.ijcai.org/Proceedings/13/Papers/414.pdf)
 
 - (12) Efficient Large-Scale Fleet Management via Multi-Agent Deep
-Reinforcement Learning [[pdf]](https://arxiv.org/pdf/1802.06444.pdf) <br>
+Reinforcement Learning [[pdf]](https://arxiv.org/pdf/1802.06444.pdf)
  : Github - https://github.com/illidanlab/Simulator/blob/master/simulator/objects.py
+ <br>
 
  - (13) Look-Ahead Insertion Policy for a Shared-Taxi System Based on Reinforcement Learning[[pdf]](https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=8094865) <br>
+
+
+  - (14) Directional Analysis of Stochastic Gradient Descent via von Mises-Fisher Distributions in Deep learning[[pdf]](https://arxiv.org/pdf/1810.00150.pdf) <br>
