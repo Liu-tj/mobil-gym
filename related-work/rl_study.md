@@ -9,3 +9,7 @@
 - (3) Evolution Strategies as a Scalable Alternative to Reinforcement Learning (2017)[[link]](https://blog.openai.com/evolution-strategies/)
 
 - (4) Learning: Genetic Algorithms Artificial Intelligence, Fall (2010) [[link]](https://www.youtube.com/watch?v=kHyNqSnzP8Y)
+
+- (5) Machine Learning for Modeling Real-World Dynamical Systems[[link]](https://www.cc.gatech.edu/~lsong/teaching/CSE6740fall14/BBoots.pdf)
+
+- (6) berkeley reinforcement learning lecture (2015) [[link]](http://rll.berkeley.edu/deeprlcoursesp17/docs/)
