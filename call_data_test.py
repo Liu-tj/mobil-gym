@@ -36,6 +36,18 @@ MESSAGECOLOR = WHITE
 TEXT_FONT = 'freesansbold.ttf'
 
 
+left_top = (top_border, left_border)
+right_top = (top_border, right_border)
+left_bottom = (bottom_border, left_border)
+right_bottom = (bottom_border, right_border)
+
+print ('Left-right (Top) : %0.2f'%distance(left_top, right_top))
+print ('Left-right (Bot) : %0.2f'%distance(left_bottom, right_bottom))
+print ('Top-Bottom (Lef) : %0.2f'%distance(left_top, left_bottom))
+print ('Top-Bottom (Rig) : %0.2f'%distance(right_top, right_bottom))
+
+
+
 
 
 def main():
@@ -64,6 +76,13 @@ def main():
     df_0510['e_mins'] = df_0510['e_time'].apply(apply_etamins)
 
     df_hour_prob = pd.read_csv('./nyc_data/hours_prob.csv')
+
+
+    df_st_prob = pd.read_csv('./nyc_data/df_st_nyc_05_mean_ptm.csv')
+    new_col = df_st_prob.columns.values
+    new_col[0] = 's_loc'
+    df_st_prob.columns = new_col
+
 
     ## Image Load
 
@@ -105,8 +124,15 @@ def main():
 
         displayTime(DISPLAYSURF, total_frame)
 
+        h3_list = get_nyc_h3coord()
 
-        display_call(DISPLAYSURF, df_call)
+        for item in h3_list :
+            display_hexagon_h3(DISPLAYSURF, item, l_color=BLUE)
+
+
+        # display_call(DISPLAYSURF, df_call)
+
+
 
         if total_frame > 1439:
             total_frame = 0
@@ -143,6 +169,13 @@ def main():
         sleep(1.5)
         FPSCLOCK.tick(FPS)
 
+def call_generation(loc, s_prob, e_prob):
+
+
+
+    return df_rtn_call
+
+
 
 def displayTime(surf, fps):
     fontObj = pygame.font.Font(TEXT_FONT, 16)
@@ -174,6 +207,14 @@ def display_call(surf, df_call):
 
     return 0
 
+def display_hexagon_h3(surf, h3coord, l_color=RED):
+    bound_list = h3.h3_to_geo_boundary(h3coord)
+
+    adj_bound_list = return_adj_coord(bound_list)
+
+    pygame.draw.polygon(surf, l_color, adj_bound_list, 2)
+
+
 def display_hexagon(surf, x, y, l_color=RED):
 
     h3coord = h3.geo_to_h3(y, x, 8)
@@ -189,6 +230,16 @@ def apply_etamins(col):
     return (col - t2).total_seconds() // 60
 
 
+def get_nyc_h3coord():
+    rtn_x_list, rtn_y_list = get_linspace(left_top, right_bottom, 100)
+
+    h3_list = []
+
+    for x_coord in rtn_x_list:
+        for y_coord in rtn_y_list:
+            h3_list.append(h3.geo_to_h3(y_coord, x_coord, 8))
+
+    return set(h3_list)
 
 
 if __name__ == '__main__':
