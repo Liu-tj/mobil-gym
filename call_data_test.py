@@ -143,13 +143,13 @@ def main():
         s_loc_lst = df_call['s_loc'].values
 
         idx = 0
-        for item in s_loc_lst[:20]:
+        for item in s_loc_lst:
 
             df_s_prob_tmp = df_call[(df_call['s_loc'] == item)]
 
             if len(df_s_prob_tmp) > 0:
 
-                s_mean_var = (df_s_prob_tmp.iloc[0, crt_frame], df_s_prob_tmp.iloc[0, crt_frame] / 10)
+                s_mean_var = (df_s_prob_tmp.iloc[0, crt_frame], df_s_prob_tmp.iloc[0, crt_frame] / 5)
                 (s_mean, s_std) = s_mean_var
                 num_of_call = int(np.random.normal(s_mean, s_std, 1))
 
@@ -169,8 +169,10 @@ def main():
 
                     idx = idx + 1
 
+        #print (len(df_rtn_call))
         # display_call(DISPLAYSURF, df_call)
-        display_call_h3(DISPLAYSURF, df_call)
+        display_call_h3(DISPLAYSURF, df_rtn_call)
+        display_call_ed_h3(DISPLAYSURF, df_rtn_call)
 
 
         if total_frame > 1439:
@@ -259,6 +261,14 @@ def displayTime(surf, fps):
     tmp_hours = str(hours)+":"+str(mins)
     surf.blit(fontObj.render('Time : ', False, BLACK), (760, 28))
     surf.blit(font_time.render(tmp_hours, False, BLUE), (890, 28))
+
+
+def display_call_ed_h3(surf, df_call):
+    num_call = len(df_call)
+
+    for i in range(num_call):
+        s_loc_h3 = df_call.iloc[i, 1]
+        display_hexagon_h3(surf, s_loc_h3, l_color=BLUE)
 
 
 def display_call_h3(surf, df_call):
