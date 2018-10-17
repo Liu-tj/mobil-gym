@@ -66,14 +66,14 @@ def main():
 
     #SOLVE_SURF, SOLVE_RECT = makeText('Solve', TEXTCOLOR, TILECOLOR, WINDOWWIDTH - 120, WINDOWHEIGHT - 30)
 
-    ## Data Load
+    ## Data Load - Ver 10/05
 
-    df_0510 = pd.read_csv('./nyc_data/df_nyc_2016_05_10.csv').drop('Unnamed: 0', axis=1)
-    df_0510['s_time'] = pd.to_datetime(df_0510['s_time'])
-    df_0510['e_time'] = pd.to_datetime(df_0510['e_time'])
-    df_0510 = df_0510.sort_values('s_time', axis=0)
-    df_0510['s_mins'] = df_0510['s_time'].apply(apply_etamins)
-    df_0510['e_mins'] = df_0510['e_time'].apply(apply_etamins)
+    #df_0510 = pd.read_csv('./nyc_data/df_nyc_2016_05_10.csv').drop('Unnamed: 0', axis=1)
+    #df_0510['s_time'] = pd.to_datetime(df_0510['s_time'])
+    #df_0510['e_time'] = pd.to_datetime(df_0510['e_time'])
+    #df_0510 = df_0510.sort_values('s_time', axis=0)
+    #df_0510['s_mins'] = df_0510['s_time'].apply(apply_etamins)
+    #df_0510['e_mins'] = df_0510['e_time'].apply(apply_etamins)
 
     df_hour_prob = pd.read_csv('./nyc_data/hours_prob.csv')
 
@@ -83,6 +83,10 @@ def main():
     new_col[0] = 's_loc'
     df_st_prob.columns = new_col
 
+    df_ed_prob = pd.read_csv('./nyc_data/df_ed_nyc_05_mean_ptm.csv')
+    new_col = df_ed_prob.columns.values
+    new_col[0] = 'e_loc'
+    df_ed_prob.columns = new_col
 
     ## Image Load
 
@@ -104,10 +108,11 @@ def main():
         DISPLAYSURF.fill(WHITE)
         DISPLAYSURF.blit(MAP_IMG, (0, 0))
 
-        ## check the call data ( Current Time Frame Call )
-        df_call = df_0510[(df_0510['s_mins'] == total_frame)][
-            ['h_dist', 's_cen_lat', 's_cen_lon', 'e_cen_lat', 'e_cen_lon', 's_mins', 'e_mins', 'eta_mins',
-             'fare_amount', 's_loc', 'e_loc']].reset_index(drop=True)
+        ## check the call data ( Current Time Frame Call ) - Ver 10/05
+
+        #df_call = df_0510[(df_0510['s_mins'] == total_frame)][
+        #    ['h_dist', 's_cen_lat', 's_cen_lon', 'e_cen_lat', 'e_cen_lon', 's_mins', 'e_mins', 'eta_mins',
+        #     'fare_amount', 's_loc', 'e_loc']].reset_index(drop=True)
 
 
         ## Check Current taxi status
@@ -124,14 +129,48 @@ def main():
 
         displayTime(DISPLAYSURF, total_frame)
 
-        h3_list = get_nyc_h3coord()
 
-        for item in h3_list :
-            display_hexagon_h3(DISPLAYSURF, item, l_color=BLUE)
+        ## NYC H3 Grid - Test Code
+        #h3_list = get_nyc_h3coord()
+        #for item in h3_list :
+        #    display_hexagon_h3(DISPLAYSURF, item, l_color=BLUE)
 
+
+        ## Ver 10-17 Call Generation From Random Variable
+        crt_frame = total_frame+1
+        df_call = df_st_prob[(df_st_prob[str(crt_frame)] > 0)]
+
+        s_loc_lst = df_call['s_loc'].values
+
+        idx = 0
+        for item in s_loc_lst[:20]:
+
+            df_s_prob_tmp = df_call[(df_call['s_loc'] == item)]
+
+            if len(df_s_prob_tmp) > 0:
+
+                s_mean_var = (df_s_prob_tmp.iloc[0, crt_frame], df_s_prob_tmp.iloc[0, crt_frame] / 10)
+                (s_mean, s_std) = s_mean_var
+                num_of_call = int(np.random.normal(s_mean, s_std, 1))
+
+                if num_of_call > 0:
+                    df_rtn_tmp = call_generation(item, num_of_call, df_ed_prob, crt_frame)
+
+                    if idx == 0:
+                        # df_rtn_tmp = call_generation(item, s_mean_var, df_e2, crt_frame)
+                        # if df_rtn_tmp != None:
+                        df_rtn_call = df_rtn_tmp
+                        # idx = idx + 1
+                    else:
+                        # df_rtn_tmp = call_generation(item, s_mean_var, df_e2, crt_frame)
+                        # if df_rtn_tmp != None:
+                        df_rtn_call = pd.concat([df_rtn_call, df_rtn_tmp])
+                        # idx = idx + 1
+
+                    idx = idx + 1
 
         # display_call(DISPLAYSURF, df_call)
-
+        display_call_h3(DISPLAYSURF, df_call)
 
 
         if total_frame > 1439:
@@ -169,12 +208,41 @@ def main():
         sleep(1.5)
         FPSCLOCK.tick(FPS)
 
-def call_generation(loc, s_prob, e_prob):
+
+def call_generation(loc, num_of_call, e_prob, crt_frame):
+    ## Input
+    ## - loc : crt _ loc
+    ## - num_of_call : num_of_call of crt location ( Random Variable from mean/variance )
+    ## - e_prob : e_loc probability of crt timeframe
+    ## - crt_frame : crt time frame
 
 
+    ## ETA Random variable similar to N.D.
+    eta_mins_lst = [1, 2, 3, 4, 5, 6, 7, 8]
+    eta_mins_prob = [0.01, 0.06, 0.12, 0.14, 0.44, 0.12, 0.10, 0.01]
+
+    def apply_h3dist(col):
+        s_h3 = col[0]
+        e_h3 = col[1]
+
+        rtn_dist = distance(h3.h3_to_geo(s_h3), h3.h3_to_geo(e_h3))
+        return rtn_dist
+
+    e_prob_list = list(e_prob.iloc[:, crt_frame] / e_prob.iloc[:, crt_frame].sum())
+    e_loc_list = np.random.choice(len(e_prob_list), num_of_call, p=e_prob_list)
+
+    dist_prob = np.random.choice(eta_mins_lst, num_of_call, p=eta_mins_prob)
+
+    df_rtn_call = pd.DataFrame()
+    df_rtn_call['s_loc'] = [loc] * num_of_call
+    df_rtn_call['e_loc'] = list(e_prob.iloc[e_loc_list]['e_loc'])
+
+    #    print (df_rtn_call)
+    df_rtn_call['dist'] = df_rtn_call[['s_loc', 'e_loc']].apply(apply_h3dist, axis=1)
+    df_rtn_call['eta'] = df_rtn_call['dist'] * dist_prob
+    df_rtn_call['eta'] = df_rtn_call['eta'].astype(int)
 
     return df_rtn_call
-
 
 
 def displayTime(surf, fps):
@@ -191,6 +259,14 @@ def displayTime(surf, fps):
     tmp_hours = str(hours)+":"+str(mins)
     surf.blit(fontObj.render('Time : ', False, BLACK), (760, 28))
     surf.blit(font_time.render(tmp_hours, False, BLUE), (890, 28))
+
+
+def display_call_h3(surf, df_call):
+    num_call = len(df_call)
+
+    for i in range(num_call):
+        s_loc_h3 = df_call.iloc[i,0]
+        display_hexagon_h3(surf, s_loc_h3, l_color=RED)
 
 
 def display_call(surf, df_call):
