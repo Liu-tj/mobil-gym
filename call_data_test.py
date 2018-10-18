@@ -68,12 +68,12 @@ def main():
 
     ## Data Load - Ver 10/05
 
-    df_0510 = pd.read_csv('./nyc_data/df_nyc_2016_05_10.csv').drop('Unnamed: 0', axis=1)
-    df_0510['s_time'] = pd.to_datetime(df_0510['s_time'])
-    df_0510['e_time'] = pd.to_datetime(df_0510['e_time'])
-    df_0510 = df_0510.sort_values('s_time', axis=0)
-    df_0510['s_mins'] = df_0510['s_time'].apply(apply_etamins)
-    df_0510['e_mins'] = df_0510['e_time'].apply(apply_etamins)
+    #df_0510 = pd.read_csv('./nyc_data/df_nyc_2016_05_10.csv').drop('Unnamed: 0', axis=1)
+    #df_0510['s_time'] = pd.to_datetime(df_0510['s_time'])
+    #df_0510['e_time'] = pd.to_datetime(df_0510['e_time'])
+    #df_0510 = df_0510.sort_values('s_time', axis=0)
+    #df_0510['s_mins'] = df_0510['s_time'].apply(apply_etamins)
+    #df_0510['e_mins'] = df_0510['e_time'].apply(apply_etamins)
 
     df_hour_prob = pd.read_csv('./nyc_data/hours_prob.csv')
 
@@ -171,12 +171,12 @@ def main():
 
         #print (len(df_rtn_call))
         # display_call(DISPLAYSURF, df_call)
-        #display_call_h3(DISPLAYSURF, df_rtn_call)
+        display_call_h3(DISPLAYSURF, df_rtn_call)
         #display_call_ed_h3(DISPLAYSURF, df_rtn_call)
 
-        df_selected = df_0510[(df_0510['s_mins'] < 80)]
+        #df_selected = df_0510[(df_0510['s_mins'] < 80)]
 
-        display_call_dot(DISPLAYSURF, df_selected)
+        #display_call_dot(DISPLAYSURF, df_selected)
 
         if total_frame > 1439:
             total_frame = 0
