@@ -47,7 +47,7 @@ print ('Top-Bottom (Lef) : %0.2f'%distance(left_top, left_bottom))
 print ('Top-Bottom (Rig) : %0.2f'%distance(right_top, right_bottom))
 
 
-
+TEMP_ST_LOC = '882a107733fffff'
 
 
 def main():
@@ -96,6 +96,14 @@ def main():
     ## Initiate Game Variable
  #   c_status = initStatus(3)
 
+    IMG_CAR_OFF = pygame.image.load('./image/car-small-nyc-off.png')
+    IMG_CAR_ON = pygame.image.load('./image/car-small-nyc-on.png')
+
+    ## Car Img Rescaled
+    IMG_CAR_OFF = pygame.transform.scale(IMG_CAR_OFF, (8, 16))
+    IMG_CAR_ON = pygame.transform.scale(IMG_CAR_ON, (8, 16))
+
+    taxi_a = Taxi(IMG_CAR_ON, IMG_CAR_OFF, TEMP_ST_LOC)
 
     total_frame = 0
     frame = 0
@@ -140,34 +148,37 @@ def main():
         crt_frame = total_frame+1
         df_call = df_st_prob[(df_st_prob[str(crt_frame)] > 0)]
 
-        s_loc_lst = df_call['s_loc'].values
+     #   s_loc_lst = df_call['s_loc'].values
 
-        idx = 0
-        for item in s_loc_lst:
+     #   idx = 0
 
-            df_s_prob_tmp = df_call[(df_call['s_loc'] == item)]
+     #   for item in s_loc_lst:
 
-            if len(df_s_prob_tmp) > 0:
+     #       df_s_prob_tmp = df_call[(df_call['s_loc'] == item)]
 
-                s_mean_var = (df_s_prob_tmp.iloc[0, crt_frame], df_s_prob_tmp.iloc[0, crt_frame] / 5)
-                (s_mean, s_std) = s_mean_var
-                num_of_call = int(np.random.normal(s_mean, s_std, 1))
+     #       if len(df_s_prob_tmp) > 0:
 
-                if num_of_call > 0:
-                    df_rtn_tmp = call_generation(item, num_of_call, df_ed_prob, crt_frame)
+     #           s_mean_var = (df_s_prob_tmp.iloc[0, crt_frame], df_s_prob_tmp.iloc[0, crt_frame] / 5)
+     #           (s_mean, s_std) = s_mean_var
+     #           num_of_call = int(np.random.normal(s_mean, s_std, 1))
 
-                    if idx == 0:
+     #           if num_of_call > 0:
+     #               df_rtn_tmp = call_generation(item, num_of_call, df_ed_prob, crt_frame)
+
+    #                if idx == 0:
                         # df_rtn_tmp = call_generation(item, s_mean_var, df_e2, crt_frame)
                         # if df_rtn_tmp != None:
-                        df_rtn_call = df_rtn_tmp
+     #                   df_rtn_call = df_rtn_tmp
                         # idx = idx + 1
-                    else:
+     #               else:
                         # df_rtn_tmp = call_generation(item, s_mean_var, df_e2, crt_frame)
                         # if df_rtn_tmp != None:
-                        df_rtn_call = pd.concat([df_rtn_call, df_rtn_tmp])
+     #                   df_rtn_call = pd.concat([df_rtn_call, df_rtn_tmp])
                         # idx = idx + 1
 
-                    idx = idx + 1
+     #               idx = idx + 1
+
+        _, df_rtn_call, _ = return_stats(taxi_a, ( df_call, df_ed_prob) , crt_frame)
 
         #print (len(df_rtn_call))
         # display_call(DISPLAYSURF, df_call)
@@ -212,6 +223,43 @@ def main():
 
         sleep(1.5)
         FPSCLOCK.tick(FPS)
+
+
+def return_stats(taxi_cls , df_call, crt_frame):
+
+    df_call , df_ed_prob = df_call
+    
+    crt_loc = taxi_cls.crt_pos
+    s_loc_lst = df_call['s_loc'].values
+
+    idx = 0
+    for item in s_loc_lst:
+
+        df_s_prob_tmp = df_call[(df_call['s_loc'] == item)]
+
+        if len(df_s_prob_tmp) > 0:
+
+            s_mean_var = (df_s_prob_tmp.iloc[0, crt_frame], df_s_prob_tmp.iloc[0, crt_frame] / 5)
+            (s_mean, s_std) = s_mean_var
+            num_of_call = int(np.random.normal(s_mean, s_std, 1))
+
+            if num_of_call > 0:
+                df_rtn_tmp = call_generation(item, num_of_call, df_ed_prob, crt_frame)
+
+                if idx == 0:
+                    # df_rtn_tmp = call_generation(item, s_mean_var, df_e2, crt_frame)
+                    # if df_rtn_tmp != None:
+                    df_rtn_call = df_rtn_tmp
+                    # idx = idx + 1
+                else:
+                    # df_rtn_tmp = call_generation(item, s_mean_var, df_e2, crt_frame)
+                    # if df_rtn_tmp != None:
+                    df_rtn_call = pd.concat([df_rtn_call, df_rtn_tmp])
+                    # idx = idx + 1
+
+                idx = idx + 1
+
+    return crt_loc, df_rtn_call, crt_frame
 
 
 def call_generation(loc, num_of_call, e_prob, crt_frame):
