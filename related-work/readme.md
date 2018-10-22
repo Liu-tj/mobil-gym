@@ -37,3 +37,6 @@ Reinforcement Learning [[pdf]](https://arxiv.org/pdf/1802.06444.pdf)
 
 
   - (14) Directional Analysis of Stochastic Gradient Descent via von Mises-Fisher Distributions in Deep learning[[pdf]](https://arxiv.org/pdf/1810.00150.pdf) <br>
+
+  - (15) An Efficient Deep Reinforcement Learning Model
+for Urban Traffic Control (2018) [[pdf]](https://arxiv.org/pdf/1808.01876.pdf) <br>
