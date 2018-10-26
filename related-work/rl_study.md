@@ -15,3 +15,12 @@
 - (6) berkeley reinforcement learning lecture (2015) [[link]](http://rll.berkeley.edu/deeprlcoursesp17/docs/)
 
 - (7) A Distributional Perspective on Reinforcement Learning (2017) [[link]](https://arxiv.org/pdf/1707.06887.pdf)
+
+
+- (8) Lecture by David Silver (english) - [[video part I]](https://www.youtube.com/watch?v=PnHCvfgC_ZA), [[video part II]](https://www.youtube.com/watch?v=0g4j2k_Ggc4&t=43s%29)
+
+- (9) Alternative lecture by Pieter Abbeel (english) - [[video]](https://www.youtube.com/watch?v=ifma8G7LegE)
+
+- (10) Alternative lecture by John Schulmann (english) - [[video]](https://www.youtube.com/watch?v=IL3gVyJMmhg)
+
+- (11) Blog post on q-learning Vs SARSA - [[url]](https://studywolf.wordpress.com/2013/07/01/reinforcement-learning-sarsa-vs-q-learning/)
