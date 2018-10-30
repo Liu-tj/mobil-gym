@@ -24,3 +24,7 @@
 - (10) Alternative lecture by John Schulmann (english) - [[video]](https://www.youtube.com/watch?v=IL3gVyJMmhg)
 
 - (11) Blog post on q-learning Vs SARSA - [[url]](https://studywolf.wordpress.com/2013/07/01/reinforcement-learning-sarsa-vs-q-learning/)
+
+
+- (12)
+The Option-Critic Architecture - [[url]](https://arxiv.org/abs/1609.05140)

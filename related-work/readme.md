@@ -40,3 +40,6 @@ Reinforcement Learning [[pdf]](https://arxiv.org/pdf/1802.06444.pdf)
 
   - (15) An Efficient Deep Reinforcement Learning Model
 for Urban Traffic Control (2018) [[pdf]](https://arxiv.org/pdf/1808.01876.pdf) <br>
+
+- (16) Multi-timescale nexting in a reinforcement learning robot
+ (2014) [[pdf]](http://journals.sagepub.com/doi/abs/10.1177/1059712313511648) <br>
