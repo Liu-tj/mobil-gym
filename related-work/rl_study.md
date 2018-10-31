@@ -28,3 +28,11 @@
 
 - (12)
 The Option-Critic Architecture - [[url]](https://arxiv.org/abs/1609.05140)
+
+
+
+- (13)
+Off-policy learning based on weighted importance sampling
+with linear computational complexity [[pdf]](http://www.incompleteideas.net/papers/MS-uai2015-wison.pdf)
+
+- (14) Model-Free Reinforcement Learning with Continuous Action in Practice [[pdf](http://www.incompleteideas.net/papers/DPS-ACC-12.pdf)
