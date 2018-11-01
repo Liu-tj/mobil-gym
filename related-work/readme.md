@@ -43,3 +43,6 @@ for Urban Traffic Control (2018) [[pdf]](https://arxiv.org/pdf/1808.01876.pdf) <
 
 - (16) Multi-timescale nexting in a reinforcement learning robot
  (2014) [[pdf]](http://journals.sagepub.com/doi/abs/10.1177/1059712313511648) <br>
+
+ - (17) Event labeling combining ensemble detectors and background knowledge
+  (2013) [[pdf]](https://link.springer.com/article/10.1007/s13748-013-0040-3) <br>
